@@ -4,12 +4,30 @@
 #include "AI/Navigation/NavigationSystem.h"
 #include "Runtime/Engine/Classes/Components/DecalComponent.h"
 #include "HeadMountedDisplayFunctionLibrary.h"
+
+#include "DlgContext.h"
+#include "DlgManager.h"
+
 #include "DlgExampleCharacter.h"
 
 ADlgExamplePlayerController::ADlgExamplePlayerController()
 {
 	bShowMouseCursor = true;
 	DefaultMouseCursor = EMouseCursor::Crosshairs;
+}
+
+void ADlgExamplePlayerController::StartDialogue(class UDlgDialogue* Dialogue, UObject* OtherParticipant)
+{
+	ActiveContext = UDlgManager::StartDialogue2(Dialogue, GetPawn(), OtherParticipant);
+}
+
+void ADlgExamplePlayerController::SelectDialogueOption(int32 Index)
+{
+	if (ActiveContext == nullptr || Index < 0 || Index >= ActiveContext->GetOptionNum())
+		return;
+
+	if (!ActiveContext->ChooseChild(Index))
+		ActiveContext = nullptr;
 }
 
 void ADlgExamplePlayerController::PlayerTick(float DeltaTime)

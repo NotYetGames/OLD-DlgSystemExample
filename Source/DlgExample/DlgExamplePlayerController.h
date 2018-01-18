@@ -14,6 +14,12 @@ class ADlgExamplePlayerController : public APlayerController
 public:
 	ADlgExamplePlayerController();
 
+	UFUNCTION(BlueprintCallable, Category = DlgSystem)
+	void StartDialogue(class UDlgDialogue* Dialogue, UObject* OtherParticipant);
+
+	UFUNCTION(BlueprintCallable, Category = DlgSystem)
+	void SelectDialogueOption(int32 Index);
+
 protected:
 	/** True if the controlled character should navigate to the mouse cursor. */
 	uint32 bMoveToMouseCursor : 1;
@@ -37,7 +43,16 @@ protected:
 
 	/** Input handlers for SetDestination action. */
 	void OnSetDestinationPressed();
+
+	UFUNCTION(BlueprintCallable)
 	void OnSetDestinationReleased();
+
+
+protected:
+
+	UPROPERTY(BlueprintReadOnly)
+	class UDlgContext* ActiveContext = nullptr;
+
 };
 
 
