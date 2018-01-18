@@ -1,0 +1,133 @@
+DlgVersion 5
+DlgName "DlgMrCube"
+DlgGuid {  A -899235511 B 1246890233 C 2138804364 D 620341414 }
+Node_Speech StartNode
+{
+	Text ""
+	bIsVirtualParent False
+	OwnerName "None"
+	bCheckChildrenOnEvaluation False
+	Children
+	{
+		{  TargetIndex 0 Text "Next" }
+		{  TargetIndex 1 Text "" }
+	}
+}
+Node Nodes
+{
+	// 0
+	Node_Speech 
+	{
+		Text "I am Mr. Cube! What can I do for you?"
+		bIsVirtualParent True
+		OwnerName "MrCube"
+		bCheckChildrenOnEvaluation False
+		EnterConditions { {  Strength "EDlgConditionStrength::DlgConditionStrengthStrong" ConditionType "EDlgConditionType::DlgConditionNodeVisited" ParticipantName "None" CallbackName "None" Operation "EDlgOperation::DlgEqual" IntValue 0 FloatValue 0.0 NameValue "None" bBoolValue False bLongTermMemory True } }
+		Children { {  TargetIndex 2 Text "Next" } }
+	}
+	// 1
+	Node_Speech 
+	{
+		Text "Good to see you again!"
+		bIsVirtualParent True
+		OwnerName "MrCube"
+		bCheckChildrenOnEvaluation False
+		Children { {  TargetIndex 2 Text "Next" } }
+	}
+	// 2
+	Node_Speech 
+	{
+		Text ""
+		bIsVirtualParent False
+		OwnerName "MrCube"
+		bCheckChildrenOnEvaluation False
+		Children
+		{
+			{  TargetIndex 3 Text "Ask him to change his color" }
+			{  TargetIndex 4 Text "Leave" }
+		}
+	}
+	// 3
+	Node_Speech 
+	{
+		Text "Could you change your color?"
+		bIsVirtualParent False
+		OwnerName "MyCharacterName"
+		bCheckChildrenOnEvaluation False
+		Children { {  TargetIndex 5 Text "Next" } }
+	}
+	// 4
+	Node_End 
+	{
+		OwnerName "MrCube"
+		bCheckChildrenOnEvaluation False
+	}
+	// 5
+	Node_Selector 
+	{
+		SelectorType "EDlgNodeSelectorType::DlgNodeSelectorFirst"
+		OwnerName "MrCube"
+		bCheckChildrenOnEvaluation True
+		Children
+		{
+			{
+				TargetIndex 6
+				Text "Next"
+				Conditions { {  Strength "EDlgConditionStrength::DlgConditionStrengthStrong" ConditionType "EDlgConditionType::DlgConditionIntCall" ParticipantName "MyCharacterName" CallbackName "ColorChangeRequest" Operation "EDlgOperation::DlgLessOrEqual" IntValue 3 FloatValue 0.0 NameValue "None" bBoolValue True bLongTermMemory True } }
+			}
+			{  TargetIndex 7 Text "" }
+		}
+	}
+	// 6
+	Node_Speech 
+	{
+		Text "Sure. What color would you like to see?"
+		bIsVirtualParent False
+		OwnerName "MrCube"
+		bCheckChildrenOnEvaluation False
+		EnterEvents { {  ParticipantName "MyCharacterName" EventType "EDlgEventType::DlgEventModifyInt" EventName "ColorChangeRequest" IntValue 1 FloatValue 0.0 NameValue "None" bDelta True bValue False } }
+		Children
+		{
+			{  TargetIndex 8 Text "Red" }
+			{  TargetIndex 9 Text "Green" }
+			{  TargetIndex 10 Text "Blue" }
+		}
+	}
+	// 7
+	Node_Speech 
+	{
+		Text "I can't keep changing my color all the time!
+Just leave me alone!"
+		bIsVirtualParent False
+		OwnerName "MrCube"
+		bCheckChildrenOnEvaluation False
+		Children { {  TargetIndex 11 Text "Finish" } }
+	}
+	// 8
+	Node_End 
+	{
+		OwnerName "MrCube"
+		bCheckChildrenOnEvaluation False
+		EnterEvents { {  ParticipantName "MrCube" EventType "EDlgEventType::DlgEventEvent" EventName "ColorToRed" IntValue 0 FloatValue 0.0 NameValue "None" bDelta False bValue False } }
+	}
+	// 9
+	Node_End 
+	{
+		OwnerName "MrCube"
+		bCheckChildrenOnEvaluation False
+		EnterEvents { {  ParticipantName "MrCube" EventType "EDlgEventType::DlgEventEvent" EventName "ColorToGreen" IntValue 0 FloatValue 0.0 NameValue "None" bDelta False bValue False } }
+	}
+	// 10
+	Node_End 
+	{
+		OwnerName "MrCube"
+		bCheckChildrenOnEvaluation False
+		EnterEvents { {  ParticipantName "None" EventType "EDlgEventType::DlgEventEvent" EventName "ColorToBlue" IntValue 0 FloatValue 0.0 NameValue "None" bDelta False bValue False } }
+	}
+	// 11
+	Node_End 
+	{
+		OwnerName "MrCube"
+		bCheckChildrenOnEvaluation False
+	}
+}
