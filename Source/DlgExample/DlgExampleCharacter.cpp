@@ -87,3 +87,71 @@ void ADlgExampleCharacter::Tick(float DeltaSeconds)
 		}
 	}
 }
+
+
+bool ADlgExampleCharacter::ModifyIntValue_Implementation(const FName& ValueName, bool bDelta, int32 Value)
+{
+	if (!DlgData.Integers.Contains(ValueName))
+		DlgData.Integers.Add(ValueName, 0);
+
+	if (bDelta)
+		DlgData.Integers[ValueName] += Value;
+	else
+		DlgData.Integers[ValueName] = Value;
+
+	return true;
+}
+
+bool ADlgExampleCharacter::ModifyFloatValue_Implementation(const FName& ValueName, bool bDelta, float Value)
+{
+	if (!DlgData.Floats.Contains(ValueName))
+		DlgData.Floats.Add(ValueName, 0.0f);
+
+	if (bDelta)
+		DlgData.Floats[ValueName] += Value;
+	else
+		DlgData.Floats[ValueName] = Value;
+
+	return true;
+}
+
+bool ADlgExampleCharacter::ModifyBoolValue_Implementation(const FName& ValueName, bool bValue)
+{
+	if (bValue)
+		DlgData.TrueBools.Add(ValueName);
+	else
+		DlgData.TrueBools.Remove(ValueName);
+
+	return true;
+}
+
+bool ADlgExampleCharacter::ModifyNameValue_Implementation(const FName& ValueName, const FName& NameValue)
+{
+	if (DlgData.Names.Contains(ValueName))
+		DlgData.Names[ValueName] = NameValue;
+	else
+		DlgData.Names.Add(ValueName, NameValue);
+
+	return true;
+}
+
+
+float ADlgExampleCharacter::GetFloatValue_Implementation(const FName& ValueName) const
+{
+	return DlgData.Floats.Contains(ValueName) ? DlgData.Floats[ValueName] : 0.0f;
+}
+
+int32 ADlgExampleCharacter::GetIntValue_Implementation(const FName& ValueName) const
+{
+	return DlgData.Integers.Contains(ValueName) ? DlgData.Integers[ValueName] : 0;
+}
+
+bool ADlgExampleCharacter::GetBoolValue_Implementation(const FName& ValueName) const
+{
+	return DlgData.TrueBools.Contains(ValueName);
+}
+
+FName ADlgExampleCharacter::GetNameValue_Implementation(const FName& ValueName) const
+{
+	return DlgData.Names.Contains(ValueName) ? DlgData.Names[ValueName] : NAME_None;
+}
