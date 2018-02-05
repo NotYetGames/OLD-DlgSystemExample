@@ -59,6 +59,7 @@ DerivedDataCache/
 Content/StarterContent/
 Content/ExampleContent/
 Content/TempTree/
+Tools/
 
 # Don't ignore icon files in Build
 !Build/**/*.ico
