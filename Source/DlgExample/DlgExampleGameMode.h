@@ -13,6 +13,8 @@ class ADlgExampleGameMode : public AGameModeBase
 
 public:
 	ADlgExampleGameMode();
+
+	void StartPlay() override;
 };
 
 

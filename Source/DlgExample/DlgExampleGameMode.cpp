@@ -1,9 +1,12 @@
 // Copyright 1998-2017 Epic Games, Inc. All Rights Reserved.
 
 #include "DlgExampleGameMode.h"
+
+#include "UObject/ConstructorHelpers.h"
+
 #include "DlgExamplePlayerController.h"
 #include "DlgExampleCharacter.h"
-#include "UObject/ConstructorHelpers.h"
+#include "DlgSystemModule.h"
 
 ADlgExampleGameMode::ADlgExampleGameMode()
 {
@@ -16,4 +19,18 @@ ADlgExampleGameMode::ADlgExampleGameMode()
 	{
 		DefaultPawnClass = PlayerPawnBPClass.Class;
 	}
+}
+
+void ADlgExampleGameMode::StartPlay()
+{
+	Super::StartPlay();
+	PrimaryActorTick.bCanEverTick = true;
+
+	// Register plugin console commands
+	if (FModuleManager::Get().IsModuleLoaded(DIALOGUE_SYSTEM_PLUGIN_NAME))
+	{
+		FModuleManager::LoadModuleChecked<FDlgSystemModule>(DIALOGUE_SYSTEM_PLUGIN_NAME).SetReferenceActor(this);
+	}
+
+	// register own commands probably
 }
