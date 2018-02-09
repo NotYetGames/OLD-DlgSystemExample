@@ -6,7 +6,7 @@
 
 #include "DlgExamplePlayerController.h"
 #include "DlgExampleCharacter.h"
-#include "DlgSystemModule.h"
+#include "IDlgSystemModule.h"
 
 ADlgExampleGameMode::ADlgExampleGameMode()
 {
@@ -27,10 +27,19 @@ void ADlgExampleGameMode::StartPlay()
 	PrimaryActorTick.bCanEverTick = true;
 
 	// Register plugin console commands
-	if (FModuleManager::Get().IsModuleLoaded(DIALOGUE_SYSTEM_PLUGIN_NAME))
+	if (IDlgSystemModule::IsAvailable())
 	{
-		FModuleManager::LoadModuleChecked<FDlgSystemModule>(DIALOGUE_SYSTEM_PLUGIN_NAME).SetReferenceActor(this);
+		IDlgSystemModule::Get().RegisterConsoleCommands(this);
 	}
 
 	// register own commands probably
+}
+
+void ADlgExampleGameMode::EndPlay(const EEndPlayReason::Type EndPlayReason)
+{
+	// Unregister all the console commands
+	if (IDlgSystemModule::IsAvailable())
+	{
+		IDlgSystemModule::Get().UnregisterConsoleCommands();
+	}
 }
