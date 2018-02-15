@@ -9,18 +9,25 @@ A blueprint only version of this example project can be downloaded from [here](h
 
 ## Clone
 ```sh
-# Cloning all submodules
-git clone --recursive -j2 https://gitlab.com/NotYetGames/DlgSystemExample.git
+git clone https://gitlab.com/NotYetGames/DlgSystemExample.git
 ```
 
+## Update (pull) 
+NOTE: repo was added with the following command:
 ```sh
-# If you cloned without the --recursive flag, run the following command
-git submodule update --init --recursive
+git subtree add --prefix Plugins/DlgSystem https://gitlab.com/NotYetGames/DlgSystem.git master --squash
 ```
 
-## Update 
+Update:
 ```sh
+# Update this repo
 git pull
-# Update submodules
-git submodule foreach git pull origin master
+# Update Subtree
+git subtree pull --prefix Plugins/DlgSystem https://gitlab.com/NotYetGames/DlgSystem.git master --squash
+```
+
+## Push subtree modifications
+NOTE: This is only if you modified the `Plugins/DlgSystem` subtree.
+```sh
+git subtree push --prefix=Plugins/DlgSystem https://gitlab.com/NotYetGames/DlgSystem.git master
 ```
