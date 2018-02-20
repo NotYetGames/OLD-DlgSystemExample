@@ -19,15 +19,18 @@ const FString UDialogueK2Node_Select::PIN_VariableName(TEXT("VariableName"));
 const FString UDialogueK2Node_Select::PIN_DefaultValue(TEXT("DefaultValue"));
 
 //////////////////////////////////////////////////////////////////////////
-// FKCHandler_Select
-class FKCHandler_Select : public FNodeHandlingFunctor
+// FKCHandler_DialogueSelect
+// TODO(leyyin): Figure out why having the same name for a handler crashes things on linux and only some times in Windows
+// For example if this is name FKCHandler_Select (like the normal K2Node_Select handler) the compiler confuses our node
+// for that node. The name should be irrelevant right? the handler is used as value in a TMap, right????
+class FKCHandler_DialogueSelect : public FNodeHandlingFunctor
 {
 protected:
 	// Mutiple nodes possible? isn't this called only on this node
 	TMap<UEdGraphNode*, FBPTerminal*> BoolTermMap;
 
 public:
-	FKCHandler_Select(FKismetCompilerContext& InCompilerContext) : FNodeHandlingFunctor(InCompilerContext)
+	FKCHandler_DialogueSelect(FKismetCompilerContext& InCompilerContext) : FNodeHandlingFunctor(InCompilerContext)
 	{
 	}
 
@@ -282,7 +285,7 @@ void UDialogueK2Node_Select::PinTypeChanged(UEdGraphPin* Pin)
 {
 	const UEdGraphSchema_K2* Schema = GetDefault<UEdGraphSchema_K2>();
 
-	if (Pin->GetName() != "Index")
+	if (Pin != GetVariableNamePin())
 	{
 		// Set the return value
 		UEdGraphPin* ReturnPin = GetReturnValuePin();
@@ -309,8 +312,7 @@ void UDialogueK2Node_Select::PinTypeChanged(UEdGraphPin* Pin)
 		OptionPins = GetOptionPins();
 		for (UEdGraphPin* OptionPin : OptionPins)
 		{
-			if (OptionPin->PinType != Pin->PinType ||
-				OptionPin == Pin)
+			if (OptionPin->PinType != Pin->PinType || OptionPin == Pin)
 			{
 				OptionPin->PinType = Pin->PinType;
 			}
@@ -373,7 +375,7 @@ FSlateIcon UDialogueK2Node_Select::GetIconAndTint(FLinearColor& OutColor) const
 // Begin UK2Node Interface
 FNodeHandlingFunctor* UDialogueK2Node_Select::CreateNodeHandler(FKismetCompilerContext& CompilerContext) const
 {
-	return static_cast<FNodeHandlingFunctor*>(new FKCHandler_Select(CompilerContext));
+	return static_cast<FNodeHandlingFunctor*>(new FKCHandler_DialogueSelect(CompilerContext));
 }
 
 bool UDialogueK2Node_Select::IsConnectionDisallowed(const UEdGraphPin* MyPin, const UEdGraphPin* OtherPin, FString& OutReason) const
@@ -392,18 +394,17 @@ void UDialogueK2Node_Select::NotifyPinConnectionListChanged(UEdGraphPin* Pin)
 {
 	Super::NotifyPinConnectionListChanged(Pin);
 
-	const UEdGraphSchema_K2* Schema = GetDefault<UEdGraphSchema_K2>();
-
-	// If this is the Enum pin we need to set the enum and reconstruct the node
-	if (Pin->PinName != "Index")
+	// Check for WildCard pins
+	if (Pin != GetVariableNamePin())
 	{
 		// Grab references to all option pins and the return pin
 		TArray<UEdGraphPin*> OptionPins = GetOptionPins();
-		UEdGraphPin* ReturnPin = FindPin(Schema->PN_ReturnValue);
-		UEdGraphPin* DefaultPin = GetDefaultValuePin();
+		const UEdGraphPin* ReturnPin = GetReturnValuePin();
+		const UEdGraphPin* DefaultPin = GetDefaultValuePin();
 
 		// See if this pin is one of the wildcard pins
-		bool bIsWildcardPin = (Pin == ReturnPin || Pin == DefaultPin || OptionPins.Find(Pin) != INDEX_NONE) && Pin->PinType.PinCategory == Schema->PC_Wildcard;
+		const bool bIsWildcardPin = (Pin == ReturnPin || Pin == DefaultPin || OptionPins.Find(Pin) != INDEX_NONE)
+				&& Pin->PinType.PinCategory == UEdGraphSchema_K2::PC_Wildcard;
 
 		// If the pin was one of the wildcards we have to handle it specially
 		if (bIsWildcardPin)
@@ -411,12 +412,12 @@ void UDialogueK2Node_Select::NotifyPinConnectionListChanged(UEdGraphPin* Pin)
 			// If the pin is linked, make sure the other wildcard pins match
 			if (Pin->LinkedTo.Num() > 0)
 			{
-				UEdGraphPin* LinkPin = Pin->LinkedTo[0];
+				const UEdGraphPin* LinkPin = Pin->LinkedTo[0];
 
+				// Linked pin type differs, change this type, change type
 				if (Pin->PinType != LinkPin->PinType)
 				{
 					Pin->PinType = LinkPin->PinType;
-
 					PinTypeChanged(Pin);
 				}
 			}
@@ -456,27 +457,32 @@ void UDialogueK2Node_Select::PostReconstructNode()
 	bReconstructNode = false;
 
 	UEdGraphPin* ReturnPin = GetReturnValuePin();
-	const bool bFillTypeFromConnected = ReturnPin && (ReturnPin->PinType.PinCategory == UEdGraphSchema_K2::PC_Wildcard);
 
+	// Wild card pin? set types depending on optoins
+	const bool bFillTypeFromConnected = ReturnPin && (ReturnPin->PinType.PinCategory == UEdGraphSchema_K2::PC_Wildcard);
 	if (bFillTypeFromConnected)
 	{
+		check(VariablePinType == ReturnPin->PinType.PinCategory);
 		FEdGraphPinType PinType = ReturnPin->PinType;
 
+		// Determine from Return pin type connection
 		if (ReturnPin->LinkedTo.Num() > 0)
 		{
 			PinType = ReturnPin->LinkedTo[0]->PinType;
 		}
 		else
 		{
-			UEdGraphPin* DefaultPin = GetDefaultValuePin();
+			// Determine from Default pin type connection
+			const UEdGraphPin* DefaultPin = GetDefaultValuePin();
 			if (DefaultPin && DefaultPin->LinkedTo.Num() > 0)
 			{
 				PinType = DefaultPin->LinkedTo[0]->PinType;
 			}
 			else
 			{
-				TArray<UEdGraphPin*> OptionPins = GetOptionPins();
-				for (UEdGraphPin* Pin : OptionPins)
+				// Determine from one of the option pin types connections
+				const TArray<UEdGraphPin*> OptionPins = GetOptionPins();
+				for (const UEdGraphPin* Pin : OptionPins)
 				{
 					if (Pin && Pin->LinkedTo.Num() > 0)
 					{
@@ -512,7 +518,7 @@ void UDialogueK2Node_Select::GetPrintStringFunction(FName& FunctionName, UClass*
 bool UDialogueK2Node_Select::RefreshPinNames()
 {
 	const FName ParticipantName = FDialogueBlueprintUtilities::GetParticipantNameFromNode(this);
-	if (ParticipantName == NAME_None)
+	if (ParticipantName == NAME_None && VariableType != EDlgVariableType::DlgVariableTypeSpeakerState)
 		return false;
 
 	TArray<FName> NewPinNames;
@@ -521,7 +527,7 @@ bool UDialogueK2Node_Select::RefreshPinNames()
 		case EDlgVariableType::DlgVariableTypeFloat:
 			UDlgManager::GetAllDialoguesFloatNames(ParticipantName, NewPinNames);
 			break;
-		
+
 		case EDlgVariableType::DlgVariableTypeInt:
 			UDlgManager::GetAllDialoguesIntNames(ParticipantName, NewPinNames);
 			break;
@@ -612,7 +618,7 @@ FText UDialogueK2Node_SelectOnSpeakerState::GetTooltipText() const
 
 FText UDialogueK2Node_SelectOnSpeakerState::GetNodeTitle(ENodeTitleType::Type TitleType) const
 {
-	return LOCTEXT("DlgSelectOnSpeakerState", "Select On Dialogue SpeakerState");
+	return LOCTEXT("DlgSelectOnSpeakerState", "Select Dialogue SpeakerState");
 }
 
 #undef LOCTEXT_NAMESPACE
