@@ -4,13 +4,14 @@ DlgGuid {  A -899235511 B 1246890233 C 2138804364 D 620341414 }
 Node_Speech StartNode
 {
 	Text ""
+	SpeakerState "None"
 	bIsVirtualParent False
 	OwnerName "None"
 	bCheckChildrenOnEvaluation False
 	Children
 	{
-		{  TargetIndex 0 Text "Next" }
-		{  TargetIndex 1 Text "" }
+		{  TargetIndex 0 Text "Next" SpeakerState "None" }
+		{  TargetIndex 1 Text "" SpeakerState "None" }
 	}
 }
 Node Nodes
@@ -19,42 +20,46 @@ Node Nodes
 	Node_Speech 
 	{
 		Text "I am Mr. Cube! What can I do for you?"
+		SpeakerState "None"
 		bIsVirtualParent True
 		OwnerName "MrCube"
 		bCheckChildrenOnEvaluation False
 		EnterConditions { {  Strength "EDlgConditionStrength::DlgConditionStrengthStrong" ConditionType "EDlgConditionType::DlgConditionNodeVisited" ParticipantName "None" CallbackName "None" Operation "EDlgOperation::DlgEqual" IntValue 0 FloatValue 0.0 NameValue "None" bBoolValue False bLongTermMemory True } }
-		Children { {  TargetIndex 2 Text "Next" } }
+		Children { {  TargetIndex 2 Text "Next" SpeakerState "None" } }
 	}
 	// 1
 	Node_Speech 
 	{
 		Text "Good to see you again!"
+		SpeakerState "None"
 		bIsVirtualParent True
 		OwnerName "MrCube"
 		bCheckChildrenOnEvaluation False
-		Children { {  TargetIndex 2 Text "Next" } }
+		Children { {  TargetIndex 2 Text "Next" SpeakerState "None" } }
 	}
 	// 2
 	Node_Speech 
 	{
 		Text ""
+		SpeakerState "None"
 		bIsVirtualParent False
 		OwnerName "MrCube"
 		bCheckChildrenOnEvaluation False
 		Children
 		{
-			{  TargetIndex 3 Text "Ask him to change his color" }
-			{  TargetIndex 4 Text "Leave" }
+			{  TargetIndex 3 Text "Ask him to change his color" SpeakerState "None" }
+			{  TargetIndex 4 Text "Leave" SpeakerState "None" }
 		}
 	}
 	// 3
 	Node_Speech 
 	{
 		Text "Could you change your color?"
+		SpeakerState "None"
 		bIsVirtualParent False
 		OwnerName "MyCharacterName"
 		bCheckChildrenOnEvaluation False
-		Children { {  TargetIndex 5 Text "Next" } }
+		Children { {  TargetIndex 5 Text "Next" SpeakerState "None" } }
 	}
 	// 4
 	Node_End 
@@ -73,24 +78,26 @@ Node Nodes
 			{
 				TargetIndex 6
 				Text "Next"
+				SpeakerState "None"
 				Conditions { {  Strength "EDlgConditionStrength::DlgConditionStrengthStrong" ConditionType "EDlgConditionType::DlgConditionIntCall" ParticipantName "MyCharacterName" CallbackName "ColorChangeRequest" Operation "EDlgOperation::DlgLessOrEqual" IntValue 3 FloatValue 0.0 NameValue "None" bBoolValue True bLongTermMemory True } }
 			}
-			{  TargetIndex 7 Text "" }
+			{  TargetIndex 7 Text "" SpeakerState "None" }
 		}
 	}
 	// 6
 	Node_Speech 
 	{
 		Text "Sure. What color would you like to see?"
+		SpeakerState "Angry"
 		bIsVirtualParent False
 		OwnerName "MrCube"
 		bCheckChildrenOnEvaluation False
 		EnterEvents { {  ParticipantName "MyCharacterName" EventType "EDlgEventType::DlgEventModifyInt" EventName "ColorChangeRequest" IntValue 1 FloatValue 0.0 NameValue "None" bDelta True bValue False } }
 		Children
 		{
-			{  TargetIndex 8 Text "Red" }
-			{  TargetIndex 9 Text "Green" }
-			{  TargetIndex 10 Text "Blue" }
+			{  TargetIndex 8 Text "Red" SpeakerState "None" }
+			{  TargetIndex 9 Text "Green" SpeakerState "None" }
+			{  TargetIndex 10 Text "Blue" SpeakerState "None" }
 		}
 	}
 	// 7
@@ -98,10 +105,11 @@ Node Nodes
 	{
 		Text "I can't keep changing my color all the time!
 Just leave me alone!"
+		SpeakerState "Happy"
 		bIsVirtualParent False
 		OwnerName "MrCube"
 		bCheckChildrenOnEvaluation False
-		Children { {  TargetIndex 11 Text "Finish" } }
+		Children { {  TargetIndex 11 Text "Finish" SpeakerState "None" } }
 	}
 	// 8
 	Node_End 

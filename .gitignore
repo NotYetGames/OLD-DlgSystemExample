@@ -14,6 +14,9 @@ enc_temp_folder/
 *.pch
 *.ipch
 
+# Ignore BuiltData for maps
+*_BuiltData.uasset
+
 # Compiled Dynamic libraries
 *.so
 *.dylib
