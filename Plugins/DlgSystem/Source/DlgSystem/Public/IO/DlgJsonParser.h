@@ -8,14 +8,14 @@
 
 #include "IDlgParser.h"
 
-DECLARE_LOG_CATEGORY_EXTERN(LogDlgJsonParser, Log, All);
+DECLARE_LOG_CATEGORY_EXTERN(LogDlgJsonParser, All, All);
 
 
 /**
  * @brief The DlgJsonParser class mostly adapted for Dialogues, copied from FJsonObjectConverter
  * See IDlgParser for properties and METADATA specifiers.
  */
-class DLGSYSTEM_API DlgJsonParser : public IDlgParser
+class DLGSYSTEM_API FDlgJsonParser : public IDlgParser
 {
 	/**
 	 * Call Order and possible calls:
@@ -31,17 +31,19 @@ class DLGSYSTEM_API DlgJsonParser : public IDlgParser
 	 */
 
 public:
-	DlgJsonParser() {}
+	FDlgJsonParser() {}
 
-	DlgJsonParser(const FString& FilePath)
+	FDlgJsonParser(const FString& FilePath)
 	{
 		InitializeParser(FilePath);
 	}
 
 	// IDlgParser Interface
 	void InitializeParser(const FString& FilePath) override;
+	void InitializeParserFromString(const FString& Text) override;
 	bool IsValidFile() const override { return bIsValidFile; }
 	void ReadAllProperty(const UStruct* ReferenceClass, void* TargetObject, UObject* DefaultObjectOuter = nullptr) override;
+
 
 private: // JSON -> UStruct
 
