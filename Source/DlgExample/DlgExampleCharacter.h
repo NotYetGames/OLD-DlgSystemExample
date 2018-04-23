@@ -32,6 +32,7 @@ public:
 	/** Dialogue System interface */
 
 	FName GetParticipantName_Implementation() const override { return DlgParticipantName; }
+	ETextGender GetParticipantGender_Implementation() const override { return ETextGender::Neuter; }
 	FText GetParticipantDisplayName_Implementation(FName ActiveSpeaker) const override { return DlgParticipantDisplayName; }
 	UTexture2D* GetParticipantIcon_Implementation(FName ActiveSpeaker, FName ActiveSpeakerState) const override { return DlgParticipantIcon; }
 
