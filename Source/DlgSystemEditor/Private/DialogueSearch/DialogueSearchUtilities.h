@@ -5,6 +5,7 @@
 
 #include "DlgEvent.h"
 #include "DlgCondition.h"
+#include "DlgTextArgument.h"
 
 //////////////////////////////////////////////////////////////////////////
 // FDialogueESearchUtilities
