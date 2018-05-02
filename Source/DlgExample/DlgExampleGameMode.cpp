@@ -23,6 +23,10 @@ ADlgExampleGameMode::ADlgExampleGameMode()
 
 void ADlgExampleGameMode::StartPlay()
 {
+	// We must clear the Dialogue memory here because the FDlgMemory is a singleton and it remains in memory. Causes
+	// problems in PIE and play in editor.
+	UDlgManager::ClearDialogueHistory();
+
 	Super::StartPlay();
 	PrimaryActorTick.bCanEverTick = true;
 
