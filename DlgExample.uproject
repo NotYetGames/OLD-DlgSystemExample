@@ -59,14 +59,6 @@
 			"Enabled": false
 		},
 		{
-			"Name": "IOSDeviceProfileSelector",
-			"Enabled": false
-		},
-		{
-			"Name": "ExampleDeviceProfileSelector",
-			"Enabled": false
-		},
-		{
 			"Name": "AndroidDeviceProfileSelector",
 			"Enabled": false
 		},
@@ -87,14 +79,6 @@
 			"Enabled": false
 		},
 		{
-			"Name": "TcpMessaging",
-			"Enabled": false
-		},
-		{
-			"Name": "UdpMessaging",
-			"Enabled": false
-		},
-		{
 			"Name": "MobilePatchingUtils",
 			"Enabled": false
 		},
@@ -112,10 +96,6 @@
 		},
 		{
 			"Name": "GoogleCloudMessaging",
-			"Enabled": false
-		},
-		{
-			"Name": "OnlineSubsystemNull",
 			"Enabled": false
 		},
 		{
