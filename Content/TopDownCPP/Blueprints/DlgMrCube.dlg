@@ -1,4 +1,4 @@
-DlgVersion 6
+DlgVersion 7
 DlgName "DlgMrCube"
 DlgGuid {  A -899235511 B 1246890233 C 2138804364 D 620341414 }
 Node_Speech StartNode
