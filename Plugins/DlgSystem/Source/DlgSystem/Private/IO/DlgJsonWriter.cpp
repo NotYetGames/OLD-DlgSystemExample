@@ -77,7 +77,7 @@ TSharedPtr<FJsonValue> FDlgJsonWriter::ConvertScalarUPropertyToJsonValue(const U
 				// NOTE, because JSON only supports floats we do not use the FJsonValueNumber for map keys because integers
 				// are displayed as floats. For example '42' is displayed as '42.0'
 				// Instead we use it as a string, this should be similar as the parser can parse an int from string
-				return MakeShareable(new FJsonValueString(FString::FromInt(NumericProperty->GetSignedIntPropertyValue(ValuePtr))));
+				return MakeShareable(new FJsonValueString(FString::Printf(TEXT("%lld"), NumericProperty->GetSignedIntPropertyValue(ValuePtr))));
 			}
 			else
 			{
@@ -136,11 +136,11 @@ TSharedPtr<FJsonValue> FDlgJsonWriter::ConvertScalarUPropertyToJsonValue(const U
 	if (const UArrayProperty* ArrayProperty = Cast<UArrayProperty>(Property))
 	{
 		TArray<TSharedPtr<FJsonValue>> Array;
-		FScriptArrayHelper Helper(ArrayProperty, ValuePtr);
+		const FDlgConstScriptArrayHelper Helper(ArrayProperty, ValuePtr);
 		for (int32 Index = 0, Num = Helper.Num(); Index < Num; Index++)
 		{
 			IndexInArray = Index;
-			TSharedPtr<FJsonValue> Elem = UPropertyToJsonValue(ArrayProperty->Inner, ContainerPtr, Helper.GetRawPtr(Index));
+			TSharedPtr<FJsonValue> Elem = UPropertyToJsonValue(ArrayProperty->Inner, ContainerPtr, Helper.GetConstRawPtr(Index));
 			if (Elem.IsValid())
 			{
 				// add to the array
@@ -156,9 +156,17 @@ TSharedPtr<FJsonValue> FDlgJsonWriter::ConvertScalarUPropertyToJsonValue(const U
 	if (const USetProperty* SetProperty = Cast<USetProperty>(Property))
 	{
 		TArray<TSharedPtr<FJsonValue>> Array;
-		FScriptSetHelper Helper(SetProperty, ValuePtr);
-		for (int32 Index = 0, Num = Helper.Num(); Index < Num; Index++)
+		const FScriptSetHelper Helper(SetProperty, ValuePtr);
+
+		// GetMaxIndex() instead of Num() - the container is not contiguous
+		// elements are in [0, GetMaxIndex[, some of them are invalid (Num() returns with the valid element num)
+		for (int32 Index = 0; Index < Helper.GetMaxIndex(); Index++)
 		{
+			if (!Helper.IsValidIndex(Index))
+			{
+				continue;
+			}
+
 			IndexInArray = Index;
 			TSharedPtr<FJsonValue> Elem = UPropertyToJsonValue(SetProperty->ElementProp, ContainerPtr, Helper.GetElementPtr(Index));
 			if (Elem.IsValid())
@@ -176,9 +184,11 @@ TSharedPtr<FJsonValue> FDlgJsonWriter::ConvertScalarUPropertyToJsonValue(const U
 	if (const UMapProperty* MapProperty = Cast<UMapProperty>(Property))
 	{
 		const TSharedRef<FJsonObject> OutObject = MakeShareable(new FJsonObject());
+		const FDlgConstScriptMapHelper Helper(MapProperty, ValuePtr);
 
-		FScriptMapHelper Helper(MapProperty, ValuePtr);
-		for (int32 Index = 0, Num = Helper.Num(); Index < Num; Index++)
+		// GetMaxIndex() instead of Num() - the container is not contiguous
+		// elements are in [0, GetMaxIndex[, some of them are invalid (Num() returns with the valid element num)
+		for (int32 Index = 0; Index < Helper.GetMaxIndex(); Index++)
 		{
 			if (!Helper.IsValidIndex(Index))
 			{
@@ -187,11 +197,11 @@ TSharedPtr<FJsonValue> FDlgJsonWriter::ConvertScalarUPropertyToJsonValue(const U
 			IndexInArray = Index;
 
 			bIsPropertyMapKey = true;
-			const uint8* MapKeyPtr = Helper.GetKeyPtr(Index);
+			const uint8* MapKeyPtr = Helper.GetConstKeyPtr(Index);
 			const TSharedPtr<FJsonValue> KeyElement = UPropertyToJsonValue(Helper.GetKeyProperty(), ContainerPtr, MapKeyPtr);
 
 			bIsPropertyMapKey = false;
-			const uint8* MapValuePtr = Helper.GetValuePtr(Index);
+			const uint8* MapValuePtr = Helper.GetConstValuePtr(Index);
 			const TSharedPtr<FJsonValue> ValueElement = UPropertyToJsonValue(Helper.GetValueProperty(), ContainerPtr, MapValuePtr);
 
 			if (KeyElement.IsValid() && ValueElement.IsValid())
@@ -273,6 +283,12 @@ TSharedPtr<FJsonValue> FDlgJsonWriter::ConvertScalarUPropertyToJsonValue(const U
 		// Because the UObjects are pointers, we must deference it. So instead of it being a void** we want it to be a void*
 		const UObject* ObjectPtr = ObjectProperty->GetObjectPropertyValue_InContainer(ValuePtr);
 
+		// Special case were we want just to save a reference to the object location
+		if (ObjectPtr != nullptr && CanSaveAsReference(ObjectProperty))
+		{
+			return MakeShareable(new FJsonValueString(ObjectPtr->GetPathName()));
+		}
+
 		// To find out if in nested containers the object is nullptr we must go a level up
 		const UObject* ContainerObjectPtr = ObjectProperty->GetObjectPropertyValue_InContainer(ContainerPtr);
 		if (ObjectPtr == nullptr || ContainerObjectPtr == nullptr)
@@ -297,23 +313,15 @@ TSharedPtr<FJsonValue> FDlgJsonWriter::ConvertScalarUPropertyToJsonValue(const U
 			return returnNullptr();
 		}
 
-		// Special case were we want just to save a reference to the object location
-		if (CanSaveAsReference(ObjectProperty))
-		{
-			return MakeShareable(new FJsonValueString(ObjectPtr->GetPathName()));
-		}
-		else
-		{
-			// Save as normal JSON Object
-			TSharedRef<FJsonObject> OutObject = MakeShareable(new FJsonObject());
-			AddIndexMetadata(OutObject);
+		// Save as normal JSON Object
+		TSharedRef<FJsonObject> OutObject = MakeShareable(new FJsonObject());
+		AddIndexMetadata(OutObject);
 
-			// Set the uproperties of the object
-			const UClass* ObjectClass = ObjectProperty->PropertyClass;
-			if (UStructToJsonObject(ObjectClass, ObjectPtr, OutObject))
-			{
-				return MakeShareable(new FJsonValueObject(OutObject));
-			}
+		// Set the uproperties of the object
+		const UClass* ObjectClass = ObjectProperty->PropertyClass;
+		if (UStructToJsonObject(ObjectClass, ObjectPtr, OutObject))
+		{
+			return MakeShareable(new FJsonValueObject(OutObject));
 		}
 
 		// Invalid
@@ -443,7 +451,8 @@ bool FDlgJsonWriter::UStructToJsonAttributes(const UStruct* StructDefinition, co
 	for (TFieldIterator<const UProperty> It(StructDefinition); It; ++It)
 	{
 		const UProperty* Property = *It;
-		check(Property);
+		if (!ensure(Property))
+			continue;
 
 		// Check to see if we should ignore this property
 		if (CheckFlags != 0 && !Property->HasAnyPropertyFlags(CheckFlags))
@@ -457,7 +466,7 @@ bool FDlgJsonWriter::UStructToJsonAttributes(const UStruct* StructDefinition, co
 		}
 		if (CanSkipProperty(Property))
 		{
-			// Markes as skiped.
+			// Marke as skipped.
 			if (bLogVerbose)
 			{
 				UE_LOG(LogDlgJsonWriter, Verbose, TEXT("Property = `%s` Marked as skiped"), *Property->GetPathName());
