@@ -20,7 +20,7 @@ FDlgConfigWriter::FDlgConfigWriter(const FString InComplexNamePrefix,
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-void FDlgConfigWriter::Write(const UStruct* StructDefinition, const void* Object)
+void FDlgConfigWriter::Write(const UStruct* const StructDefinition, const void* const Object)
 {
 	TopLevelObjectPtr = Object;
 	WriteComplexMembersToString(StructDefinition, Object, "", EOL, ConfigText);
@@ -169,6 +169,10 @@ bool FDlgConfigWriter::WritePrimitiveElementToString(const UProperty* Prop,
 	{
 		return true;
 	}
+	if (WritePrimitiveElementToStringTemplated<UInt64Property, int64>(Prop, Object, bInContainer, IntToString, PreS, PostS, Target))
+	{
+		return true;
+	}
 	if (WritePrimitiveElementToStringTemplated<UFloatProperty, float>(Prop, Object, bInContainer, FloatToString, PreS, PostS, Target))
 	{
 		return true;
@@ -221,6 +225,10 @@ bool FDlgConfigWriter::WritePrimitiveArrayToString(const UProperty* Property,
 		return true;
 	}
 	if (WritePrimitiveArrayToStringTemplated<UIntProperty, int32>(ArrayProp, Object, IntToString, PreString, PostString, Target))
+	{
+		return true;
+	}
+	if (WritePrimitiveArrayToStringTemplated<UInt64Property, int64>(ArrayProp, Object, IntToString, PreString, PostString, Target))
 	{
 		return true;
 	}
@@ -395,7 +403,7 @@ bool FDlgConfigWriter::WriteComplexArrayToString(const UProperty* Property,
 	}
 
 	// Empty Array
-	FScriptArrayHelper Helper(ArrayProp, ArrayProp->ContainerPtrToValuePtr<uint8>(Object));
+	const FDlgConstScriptArrayHelper Helper(ArrayProp, ArrayProp->ContainerPtrToValuePtr<uint8>(Object));
 	if (Helper.Num() == 0 && bDontWriteEmptyContainer)
 	{
 		return true;
@@ -409,12 +417,12 @@ bool FDlgConfigWriter::WriteComplexArrayToString(const UProperty* Property,
 		TypeText = GetStringWithoutPrefix(ObjProp->PropertyClass->GetName()) + " ";
 	}
 
-	if (Helper.Num() == 1 && !WouldWriteNonPrimitive(GetComplexType(ArrayProp->Inner), Helper.GetRawPtr(0)))
+	if (Helper.Num() == 1 && !WouldWriteNonPrimitive(GetComplexType(ArrayProp->Inner), Helper.GetConstRawPtr(0)))
 	{
 		Target += PreString + TypeText + ArrayProp->Inner->GetName() + " {";
 		for (int32 i = 0; i < Helper.Num(); ++i)
 		{
-			WriteComplexElementToString(ArrayProp->Inner, Helper.GetRawPtr(i), true, " ", "", CanSaveAsReference(ArrayProp), Target);
+			WriteComplexElementToString(ArrayProp->Inner, Helper.GetConstRawPtr(i), true, " ", "", CanSaveAsReference(ArrayProp), Target);
 		}
 		Target += " }" + PostString;
 	}
@@ -428,7 +436,7 @@ bool FDlgConfigWriter::WriteComplexArrayToString(const UProperty* Property,
 			{
 				Target += PreString + "\t// " + FString::FromInt(i) + EOL;
 			}
-			WriteComplexElementToString(ArrayProp->Inner, Helper.GetRawPtr(i), true, PreString + "\t", EOL, CanSaveAsReference(ArrayProp), Target);
+			WriteComplexElementToString(ArrayProp->Inner, Helper.GetConstRawPtr(i), true, PreString + "\t", EOL, CanSaveAsReference(ArrayProp), Target);
 		}
 		Target += PreString + "}" + EOL;
 	}
@@ -450,7 +458,7 @@ bool FDlgConfigWriter::WriteMapToString(const UProperty* Property,
 	}
 
 	// Empty map
-	FScriptMapHelper Helper(MapProp, MapProp->ContainerPtrToValuePtr<uint8>(Object));
+	const FScriptMapHelper Helper(MapProp, MapProp->ContainerPtrToValuePtr<uint8>(Object));
 	if (Helper.Num() == 0 && bDontWriteEmptyContainer)
 	{
 		return true;
@@ -461,8 +469,16 @@ bool FDlgConfigWriter::WriteMapToString(const UProperty* Property,
 	{
 		// Both Key and Value are primitives
 		Target += PreString + MapProp->GetName() + " { ";
-		for (int32 i = 0; i < Helper.Num(); ++i)
+
+		// GetMaxIndex() instead of Num() - the container is not contiguous
+		// elements are in [0, GetMaxIndex[, some of them are invalid (Num() returns with the valid element num)
+		for (int32 i = 0; i < Helper.GetMaxIndex(); ++i)
 		{
+			if (!Helper.IsValidIndex(i))
+			{
+				continue;
+			}
+
 			WritePrimitiveElementToString(MapProp->KeyProp, Helper.GetPairPtr(i), true, "", " ", Target);
 			WritePrimitiveElementToString(MapProp->ValueProp, Helper.GetPairPtr(i), true, "", " ", Target);
 		}
@@ -473,8 +489,16 @@ bool FDlgConfigWriter::WriteMapToString(const UProperty* Property,
 		// Either Key or Value is not a primitive
 		Target += PreString + MapProp->GetName() + EOL;
 		Target += PreString + "{" + EOL;
-		for (int32 i = 0; i < Helper.Num(); ++i)
+
+		// GetMaxIndex() instead of Num() - the container is not contiguous
+		// elements are in [0, GetMaxIndex[, some of them are invalid (Num() returns with the valid element num)
+		for (int32 i = 0; i < Helper.GetMaxIndex(); ++i)
 		{
+			if (!Helper.IsValidIndex(i))
+			{
+				continue;
+			}
+
 			WritePropertyToString(MapProp->KeyProp, Helper.GetPairPtr(i), true, PreString + "\t", EOL, CanSaveAsReference(MapProp), Target);
 			WritePropertyToString(MapProp->ValueProp, Helper.GetPairPtr(i), true, PreString + "\t", EOL, CanSaveAsReference(MapProp), Target);
 		}
@@ -498,7 +522,7 @@ bool FDlgConfigWriter::WriteSetToString(const UProperty* Property,
 	}
 
 	// Empty set
-	FScriptSetHelper Helper(SetProp, SetProp->ContainerPtrToValuePtr<uint8>(Object));
+	const FScriptSetHelper Helper(SetProp, SetProp->ContainerPtrToValuePtr<uint8>(Object));
 	if (Helper.Num() == 0 && bDontWriteEmptyContainer)
 	{
 		return true;
@@ -525,8 +549,14 @@ bool FDlgConfigWriter::WriteSetToString(const UProperty* Property,
 		}
 
 		// Set content
-		for (int32 i = 0; i < Helper.Num(); ++i)
+		// GetMaxIndex() instead of Num() - the container is not contiguous, elements are in [0, GetMaxIndex[, some of them is invalid (Num() returns with the valid element num)
+		for (int32 i = 0; i < Helper.GetMaxIndex(); ++i)
 		{
+			if (!Helper.IsValidIndex(i))
+			{
+				continue;
+			}
+
 			if (bLinePerItem)
 			{
 				WritePrimitiveElementToString(SetProp->ElementProp, Helper.GetElementPtr(i), true, EOL + SubPreString, "", Target);
@@ -553,6 +583,7 @@ bool FDlgConfigWriter::IsPrimitive(const UProperty* Property)
 {
 	return Cast<UBoolProperty>(Property) != nullptr ||
 		   Cast<UIntProperty>(Property) != nullptr ||
+		   Cast<UInt64Property>(Property) != nullptr ||
 		   Cast<UFloatProperty>(Property) != nullptr ||
 		   Cast<UStrProperty>(Property) != nullptr ||
 		   Cast<UNameProperty>(Property) != nullptr ||
@@ -629,7 +660,7 @@ bool FDlgConfigWriter::WouldWriteNonPrimitive(const UStruct* StructDefinition, c
 			// Map
 			if (const UMapProperty* MapProperty = Cast<UMapProperty>(Property))
 			{
-				FScriptMapHelper Helper(MapProperty, Property->ContainerPtrToValuePtr<uint8>(Owner));
+				const FScriptMapHelper Helper(MapProperty, Property->ContainerPtrToValuePtr<uint8>(Owner));
 				if (Helper.Num() > 0)
 				{
 					return true;
@@ -639,7 +670,7 @@ bool FDlgConfigWriter::WouldWriteNonPrimitive(const UStruct* StructDefinition, c
 			// Array
 			if (const UArrayProperty* ArrayProperty = Cast<UArrayProperty>(Property))
 			{
-				FScriptArrayHelper Helper(ArrayProperty, Property->ContainerPtrToValuePtr<uint8>(Owner));
+				const FScriptArrayHelper Helper(ArrayProperty, Property->ContainerPtrToValuePtr<uint8>(Owner));
 				if (Helper.Num() > 0)
 				{
 					return true;
@@ -649,7 +680,7 @@ bool FDlgConfigWriter::WouldWriteNonPrimitive(const UStruct* StructDefinition, c
 			// Set
 			if (const USetProperty* SetProperty = Cast<USetProperty>(Property))
 			{
-				FScriptSetHelper Helper(SetProperty, Property->ContainerPtrToValuePtr<uint8>(Owner));
+				const FScriptSetHelper Helper(SetProperty, Property->ContainerPtrToValuePtr<uint8>(Owner));
 				if (Helper.Num() > 0)
 				{
 					return true;
