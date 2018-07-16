@@ -14,7 +14,7 @@ Branch Unreal version: `4.18`
     - Search window
     - Dialogue Browser to get a good overview of all the dialogues
     - Customized blueprint nodes to handle certain events and conditions in Blueprint easily
-    - Settings panel in Editor Preferences to modify the layout
+    - Settings panel in Project Settings to modify the layout
     - Option to import from and export to plain text formats (e.g. json)
     - Real time display/edit functionality of the Dialogue runtime data.
 
@@ -38,6 +38,15 @@ Brought to you by Not Yet:
 * [Plugin Forum post](https://forums.unrealengine.com/community/community-content-tools-and-tutorials/1424923-open-source-dialogue-system-plugin)
 * [Plugin Marketplace](https://www.unrealengine.com/marketplace/not-yet-dialogue-system)
 
+
+## Modules dependency
+```mermaid
+graph TD;
+    A[DlgSystemEditor]-->B[UnrealEd];
+    A-->C[DlgSystem];
+    C-. WITH_EDITOR .->B;
+    C-. WITH_EDITOR using IDlgDialogueEditorModule .->A
+```
 
 ## Conventions
 
