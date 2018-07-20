@@ -5,7 +5,6 @@ Branch Unreal version: `4.18`
 Example project for the [DlgSystem](https://gitlab.com/NotYetGames/DlgSystem/tree/4.18) plugin.
 
 See the [Wiki](https://gitlab.com/NotYetGames/DlgSystem/wikis/home) for the manual and tutorials.
-A blueprint only version of this example project can be downloaded from [here](https://www.dropbox.com/s/b946mre9zw5mlx7/DlgExampleBP.zip?dl=0).
 
 ## Clone
 ```sh
