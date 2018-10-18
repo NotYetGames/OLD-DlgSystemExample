@@ -4,18 +4,19 @@
 #include "Extensions/ContentBrowserExtensions.h"
 #include "Engine/ObjectLibrary.h"
 #include "Engine/BlueprintCore.h"
-#include "SharedPointer.h"
+#include "Templates/SharedPointer.h"
 #include "AssetRegistryModule.h"
-#include "BlueprintEditorUtils.h"
+#include "Kismet2/BlueprintEditorUtils.h"
 #include "WorkspaceMenuStructureModule.h"
 #include "WorkspaceMenuStructure.h"
-#include "SDockTab.h"
+#include "Widgets/Docking/SDockTab.h"
 #include "K2Node.h"
 #include "FileHelpers.h"
-#include "MultiBox/MultiBoxExtender.h"
+#include "Framework/MultiBox/MultiBoxExtender.h"
 #include "LevelEditor.h"
-#include "GenericPlatformMisc.h"
+#include "GenericPlatform/GenericPlatformMisc.h"
 #include "Editor.h"
+#include "Framework/MultiBox/MultiBoxBuilder.h"
 
 #include "DialogueGraphFactories.h"
 #include "DlgSystemEditorPrivatePCH.h"
@@ -56,35 +57,8 @@ FDlgSystemEditorModule::FDlgSystemEditorModule() : DlgSystemAssetCategoryBit(EAs
 void FDlgSystemEditorModule::StartupModule()
 {
 	UE_LOG(LogDlgSystemEditor, Verbose, TEXT("Started DlgSystemEditorModule"));
-	const int32 NumLoadedDialogues = UDlgManager::LoadAllDialoguesIntoMemory();
-	UE_LOG(LogDlgSystemEditor, Verbose, TEXT("UDlgManager::LoadAllDialoguesIntoMemory loaded %d Dialogues into Memory"), NumLoadedDialogues);
-
-	// Try to fix duplicate GUID
-	// Can happen for one of the following reasons:
-	// - duplicated files outside of UE
-	// - somehow loaded from text files?
-	// - the universe hates us? +_+
-	for (UDlgDialogue* Dialogue : UDlgManager::GetDialoguesWithDuplicateGuid())
-	{
-		UE_LOG(LogDlgSystemEditor, Warning, TEXT("Dialogue = `%s`, GUID = `%s` has a Duplicate GUID. Regenerating."),
-				*Dialogue->GetPathName(), *Dialogue->GetDlgGuid().ToString())
-		Dialogue->RegenerateGuid();
-		Dialogue->MarkPackageDirty();
-	}
-
-	// Give it another try, Give up :((
-	// May the math Gods have mercy on us!
-	for (UDlgDialogue* Dialogue : UDlgManager::GetDialoguesWithDuplicateGuid())
-	{
-		// GUID already exists (╯°□°）╯︵ ┻━┻
-		// Does this break the universe?
-		UE_LOG(LogDlgSystemEditor, Error, TEXT("Dialogue = `%s`, GUID = `%s`"),
-				*Dialogue->GetPathName(), *Dialogue->GetDlgGuid().ToString())
-		UE_LOG(LogDlgSystemEditor,
-			Fatal,
-			TEXT("(╯°□°）╯︵ ┻━┻ Congrats, you just broke the universe, are you even human? Now please go and proove an NP complete problem."
-				"The chance of generating two equal random FGuid (picking 4, uint32 numbers) is p = 9.3132257 * 10^(-10) % (or something like this)"))
-	}
+	OnPostEngineInitHandle = FCoreDelegates::OnPostEngineInit.AddRaw(this, &Self::HandleOnPostEngineInit);
+	OnBeginPIEHandle = FEditorDelegates::BeginPIE.AddRaw(this, &Self::HandleOnBeginPIE);
 
 	// Register slate style overrides
 	FDialogueStyle::Initialize();
@@ -159,7 +133,7 @@ void FDlgSystemEditorModule::StartupModule()
 	FEdGraphUtilities::RegisterVisualPinFactory(DialogueGraphPinFactory);
 
 	// Bind Editor commands
-	GlobalEditorCommands =  MakeShareable(new FUICommandList);
+	GlobalEditorCommands = MakeShareable(new FUICommandList);
 	GlobalEditorCommands->MapAction(FDialogueEditorCommands::Get().SaveAllDialogues,
 		FExecuteAction::CreateStatic(&Self::HandleOnSaveAllDialogues));
 
@@ -230,6 +204,11 @@ void FDlgSystemEditorModule::ShutdownModule()
 	// Unregister the Dialogue Search
 	FFindInDialogueSearchManager::Get()->DisableGlobalFindResults();
 
+	if (OnBeginPIEHandle.IsValid())
+	{
+		FEditorDelegates::BeginPIE.Remove(OnBeginPIEHandle);
+	}
+
 	UE_LOG(LogDlgSystemEditor, Verbose, TEXT("Stopped DlgSystemEditorModule"));
 }
 
@@ -262,6 +241,69 @@ void FDlgSystemEditorModule::HandleOnSaveAllDialogues()
 	{
 		UE_LOG(LogDlgSystemEditor, Error, TEXT("Failed To save all Dialogues. An error occurred."));
 	}
+}
+
+void FDlgSystemEditorModule::HandleOnPostEngineInit()
+{
+	if (!OnPostEngineInitHandle.IsValid())
+	{
+		return;
+	}
+
+	UE_LOG(LogDlgSystemEditor, Verbose, TEXT("DlgSystemEditorModule::HandleOnPostEngineInit"));
+	FCoreDelegates::OnPostEngineInit.Remove(OnPostEngineInitHandle);
+	OnPostEngineInitHandle.Reset();
+
+	//const int32 NumDialoguesBefore = UDlgManager::GetAllDialoguesFromMemory().Num();
+	const int32 NumLoadedDialogues = UDlgManager::LoadAllDialoguesIntoMemory();
+	//const int32 NumDialoguesAfter = UDlgManager::GetAllDialoguesFromMemory().Num();
+	//check(NumDialoguesBefore == NumDialoguesAfter);
+	UE_LOG(LogDlgSystemEditor, Verbose, TEXT("UDlgManager::LoadAllDialoguesIntoMemory loaded %d Dialogues into Memory"), NumLoadedDialogues);
+
+	// Try to fix duplicate GUID
+	// Can happen for one of the following reasons:
+	// - duplicated files outside of UE
+	// - somehow loaded from text files?
+	// - the universe hates us? +_+
+	for (UDlgDialogue* Dialogue : UDlgManager::GetDialoguesWithDuplicateGuid())
+	{
+		UE_LOG(LogDlgSystemEditor, Warning, TEXT("Dialogue = `%s`, GUID = `%s` has a Duplicate GUID. Regenerating."),
+			*Dialogue->GetPathName(), *Dialogue->GetDlgGuid().ToString())
+			Dialogue->RegenerateGuid();
+		Dialogue->MarkPackageDirty();
+	}
+
+	// Give it another try, Give up :((
+	// May the math Gods have mercy on us!
+	for (const UDlgDialogue* Dialogue : UDlgManager::GetDialoguesWithDuplicateGuid())
+	{
+		// GUID already exists (╯°□°）╯︵ ┻━┻
+		// Does this break the universe?
+		UE_LOG(LogDlgSystemEditor, Error, TEXT("Dialogue = `%s`, GUID = `%s`"),
+			*Dialogue->GetPathName(), *Dialogue->GetDlgGuid().ToString())
+			UE_LOG(LogDlgSystemEditor,
+				Fatal,
+				TEXT("(╯°□°）╯︵ ┻━┻ Congrats, you just broke the universe, are you even human? Now please go and proove an NP complete problem."
+					"The chance of generating two equal random FGuid (picking 4, uint32 numbers) is p = 9.3132257 * 10^(-10) % (or something like this)"))
+	}
+}
+
+void FDlgSystemEditorModule::HandleOnBeginPIE(bool bIsSimulating)
+{
+	if (!OnBeginPIEHandle.IsValid())
+	{
+		return;
+	}
+	if (const UDlgSystemSettings* Settings = GetDefault<UDlgSystemSettings>())
+	{
+		if (!Settings->bClearDialogueHistoryAutomatically)
+		{
+			return;
+		}
+	}
+
+	UE_LOG(LogDlgSystemEditor, Verbose, TEXT("BeginPIE: Clearing Dialogue History"));
+	UDlgManager::ClearDialogueHistory();
 }
 
 void FDlgSystemEditorModule::ExtendMenu()
