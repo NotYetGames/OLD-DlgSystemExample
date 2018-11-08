@@ -14,6 +14,8 @@ enc_temp_folder/
 *.pch
 *.ipch
 
+PackagedPlugin/
+
 # Ignore BuiltData for maps
 *_BuiltData.uasset
 
