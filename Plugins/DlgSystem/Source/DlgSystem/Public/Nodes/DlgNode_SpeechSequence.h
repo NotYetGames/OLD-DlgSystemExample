@@ -1,16 +1,18 @@
 // Copyright 2017-2018 Csaba Molnar, Daniel Butum
 #pragma once
 
-#include "DlgNode.h"
+#include "Nodes/DlgNode.h"
+#include "DlgSystemSettings.h"
 #include "DlgNode_SpeechSequence.generated.h"
 
 class USoundWave;
 class UDialogueWave;
 
-USTRUCT(BlueprintType)
+USTRUCT(BlueprintType, Blueprintable)
 struct DLGSYSTEM_API FDlgSpeechSequenceEntry
 {
 	GENERATED_USTRUCT_BODY()
+	// NOTE: don't create a default constructor here, because otherwise if will fail because some CDO BS after you convert nodes to speech sequence
 
 public:
 	/** The Participant Name (speaker) associated with this speech entry. */
@@ -35,7 +37,7 @@ public:
 
 	/** Text that will appear when you want to continue down this edge to the next conversation. Usually "Next". */
 	UPROPERTY(EditAnywhere, Category = DialogueNodeData, Meta = (MultiLine = true))
-	FText EdgeText = FText::FromString("Next");
+	FText EdgeText = UDlgSystemSettings::EdgeTextNext;
 };
 
 

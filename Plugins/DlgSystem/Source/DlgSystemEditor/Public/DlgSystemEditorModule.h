@@ -2,11 +2,11 @@
 #pragma once
 
 #include "IDlgSystemEditorModule.h"
-#include "SharedPointer.h"
+#include "Templates/SharedPointer.h"
 #include "AssetTypeCategories.h"
 #include "IAssetTypeActions.h"
-#include "Commands/UICommandList.h"
-#include "Docking/WorkspaceItem.h"
+#include "Framework/Commands/UICommandList.h"
+#include "Framework/Docking/WorkspaceItem.h"
 
 
 class FSpawnTabArgs;
@@ -39,6 +39,12 @@ private:
 	/** Handle clicking on save all dialogues. */
 	static void HandleOnSaveAllDialogues();
 
+	/** Handle on post engine init event */
+	void HandleOnPostEngineInit();
+
+	/** Extend the Menus of the editor */
+	void HandleOnBeginPIE(bool bIsSimulating);
+
 	/** Extend the Menus of the editor */
 	void ExtendMenu();
 
@@ -68,4 +74,8 @@ private:
 
 	/** The Tools Dialogue category. */
 	TSharedPtr<FWorkspaceItem> ToolsDialogueCategory;
+
+	// Handlers
+	FDelegateHandle OnPostEngineInitHandle;
+	FDelegateHandle OnBeginPIEHandle;
 };
