@@ -17,6 +17,8 @@ enc_temp_folder/
 # Ignore BuiltData for maps
 *_BuiltData.uasset
 
+PackagedPlugin/
+
 # Compiled Dynamic libraries
 *.so
 *.dylib
