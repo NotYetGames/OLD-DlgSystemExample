@@ -34,6 +34,8 @@ void FDialogueSpeechSequenceEntry_Details::CustomizeHeader(TSharedRef<IPropertyH
 void FDialogueSpeechSequenceEntry_Details::CustomizeChildren(TSharedRef<IPropertyHandle> InStructPropertyHandle,
 	IDetailChildrenBuilder& StructBuilder, IPropertyTypeCustomizationUtils& StructCustomizationUtils)
 {
+	const bool bHasDialogue = Dialogue != nullptr;
+
 	// Speaker
 	{
 		const TSharedPtr<IPropertyHandle> ParticipantNamePropertyHandle =
@@ -45,7 +47,7 @@ void FDialogueSpeechSequenceEntry_Details::CustomizeChildren(TSharedRef<IPropert
 			SNew(STextPropertyPickList)
 			.AvailableSuggestions(this, &Self::GetAllDialoguesParticipantNames)
 			.OnTextCommitted(this, &Self::HandleTextCommitted)
-			.HasContextCheckbox(true)
+			.HasContextCheckbox(bHasDialogue)
 			.IsContextCheckBoxChecked(true)
 			.CurrentContextAvailableSuggestions(this, &Self::GetCurrentDialogueParticipantNames)
 		)
@@ -99,7 +101,7 @@ void FDialogueSpeechSequenceEntry_Details::CustomizeChildren(TSharedRef<IPropert
 	VoiceDialogueWavePropertyRow = &StructBuilder.AddProperty(
 		StructPropertyHandle->GetChildHandle(GET_MEMBER_NAME_CHECKED(FDlgSpeechSequenceEntry, VoiceDialogueWave)).ToSharedRef());
 	VoiceDialogueWavePropertyRow->Visibility(CREATE_VISIBILITY_CALLBACK(&Self::GetVoiceDialogueWaveVisibility));
-
+	
 	// Edge Text
 	{
 		EdgeTextPropertyHandle = StructPropertyHandle->GetChildHandle(GET_MEMBER_NAME_CHECKED(FDlgSpeechSequenceEntry, EdgeText));
@@ -120,6 +122,11 @@ void FDialogueSpeechSequenceEntry_Details::CustomizeChildren(TSharedRef<IPropert
 		->SetPropertyUtils(StructCustomizationUtils.GetPropertyUtilities())
 		->Update();
 	}
+
+	// Generic Data
+	GenericDataPropertyRow = &StructBuilder.AddProperty(
+		StructPropertyHandle->GetChildHandle(GET_MEMBER_NAME_CHECKED(FDlgSpeechSequenceEntry, GenericData)).ToSharedRef());
+	GenericDataPropertyRow->Visibility(CREATE_VISIBILITY_CALLBACK(&Self::GetGenericDataVisibility));
 }
 
 #undef LOCTEXT_NAMESPACE
