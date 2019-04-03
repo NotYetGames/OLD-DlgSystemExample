@@ -1,14 +1,14 @@
 # DlgSystem (Dialogue System) Plugin Example Project
 
-Branch Unreal version: `4.21`
+Branch Unreal version: `4.22`
 
-Example project for the [DlgSystem](https://gitlab.com/NotYetGames/DlgSystem/tree/4.21) plugin.
+Example project for the [DlgSystem](https://gitlab.com/NotYetGames/DlgSystem/tree/4.22) plugin.
 
 See the [Wiki](https://gitlab.com/NotYetGames/DlgSystem/wikis/home) for the manual and tutorials.
 
 ## Clone
 ```sh
-git clone -b 4.21 https://gitlab.com/NotYetGames/DlgSystemExample.git
+git clone -b 4.22 https://gitlab.com/NotYetGames/DlgSystemExample.git
 ```
 
 ## Update (pull)
@@ -18,13 +18,13 @@ Update:
 # Update this repo
 git pull
 # Update Subtree
-git subtree pull --prefix Plugins/DlgSystem https://gitlab.com/NotYetGames/DlgSystem.git 4.21 --squash
+git subtree pull --prefix Plugins/DlgSystem https://gitlab.com/NotYetGames/DlgSystem.git 4.22 --squash
 ```
 
 ## Push subtree modifications
 NOTE: This is only if you modified the `Plugins/DlgSystem` subtree.
 ```sh
-git subtree push --prefix=Plugins/DlgSystem https://gitlab.com/NotYetGames/DlgSystem.git 4.21
+git subtree push --prefix=Plugins/DlgSystem https://gitlab.com/NotYetGames/DlgSystem.git 4.22
 ```
 
 ## Other
