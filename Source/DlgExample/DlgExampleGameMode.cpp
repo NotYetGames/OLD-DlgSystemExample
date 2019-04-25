@@ -10,6 +10,10 @@
 
 ADlgExampleGameMode::ADlgExampleGameMode()
 {
+	//
+	// C++ version, can be overriden in BP
+	//
+
 	// use our custom PlayerController class
 	PlayerControllerClass = ADlgExamplePlayerController::StaticClass();
 
@@ -23,6 +27,10 @@ ADlgExampleGameMode::ADlgExampleGameMode()
 
 void ADlgExampleGameMode::StartPlay()
 {
+	//
+	// C++ version, can be overriden in BP
+	//
+
 	// We must clear the Dialogue memory here because the FDlgMemory is a singleton and it remains in memory. Causes
 	// problems in PIE and play in editor.
 	UDlgManager::ClearDialogueHistory();
@@ -38,6 +46,10 @@ void ADlgExampleGameMode::StartPlay()
 
 void ADlgExampleGameMode::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
+	//
+	// C++ version, can be overriden in BP
+	//
+
 	// Unregister all the console commands
 	UDlgManager::UnRegisterDialogueModuleConsoleCommands();
 }

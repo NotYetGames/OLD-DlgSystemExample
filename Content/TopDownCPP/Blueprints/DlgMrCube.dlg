@@ -10,6 +10,7 @@ Node_Speech StartNode
 	bCheckChildrenOnEvaluation False
 	VoiceSoundWave ""
 	VoiceDialogueWave ""
+	GenericData ""
 	Children
 	{
 		{  TargetIndex 0 Text "Next" SpeakerState "None" bIncludeInAllOptionListIfUnsatisfied True }
@@ -19,7 +20,7 @@ Node_Speech StartNode
 DlgParticipantClasses
 {
 	{  ParticipantName "MrCube" ParticipantClass "/Game/TopDownCPP/Blueprints/MrCube.MrCube_C" }
-	{  ParticipantName "MyCharacterName" ParticipantClass "/Script/DlgExample.DlgExampleCharacter" }
+	{  ParticipantName "MyCharacterName" ParticipantClass "/Game/TopDownCPP/Blueprints/TopDownCharacter.TopDownCharacter_C" }
 }
 Node Nodes
 {
@@ -33,6 +34,7 @@ Node Nodes
 		bCheckChildrenOnEvaluation False
 		VoiceSoundWave ""
 		VoiceDialogueWave ""
+		GenericData ""
 		EnterConditions { {  Strength "EDlgConditionStrength::DlgConditionStrengthStrong" ConditionType "EDlgConditionType::DlgConditionNodeVisited" ParticipantName "None" CallbackName "None" Operation "EDlgOperation::DlgEqual" CompareType "EDlgCompareType::DlgCompareToConst" OtherParticipantName "None" OtherVariableName "None" IntValue 0 FloatValue 0.0 NameValue "None" bBoolValue False bLongTermMemory True } }
 		Children { {  TargetIndex 2 Text "Next" SpeakerState "None" bIncludeInAllOptionListIfUnsatisfied True } }
 	}
@@ -46,6 +48,7 @@ Node Nodes
 		bCheckChildrenOnEvaluation False
 		VoiceSoundWave ""
 		VoiceDialogueWave ""
+		GenericData ""
 		Children { {  TargetIndex 2 Text "Next" SpeakerState "None" bIncludeInAllOptionListIfUnsatisfied True } }
 	}
 	// 2
@@ -58,6 +61,7 @@ Node Nodes
 		bCheckChildrenOnEvaluation False
 		VoiceSoundWave ""
 		VoiceDialogueWave ""
+		GenericData ""
 		Children
 		{
 			{  TargetIndex 3 Text "Ask him to change his color" SpeakerState "None" bIncludeInAllOptionListIfUnsatisfied True }
@@ -74,6 +78,9 @@ Node Nodes
 		bCheckChildrenOnEvaluation False
 		VoiceSoundWave ""
 		VoiceDialogueWave ""
+		GenericData ""
+		EnterConditions { {  Strength "EDlgConditionStrength::DlgConditionStrengthStrong" ConditionType "EDlgConditionType::DlgConditionClassIntVariable" ParticipantName "MrCube" CallbackName "None" Operation "EDlgOperation::DlgEqual" CompareType "EDlgCompareType::DlgCompareToConst" OtherParticipantName "None" OtherVariableName "None" IntValue 0 FloatValue 0.0 NameValue "None" bBoolValue True bLongTermMemory True } }
+		EnterEvents { {  ParticipantName "MrCube" EventType "EDlgEventType::DlgEventModifyClassIntVariable" EventName "Stamina" IntValue 20 FloatValue 0.0 NameValue "None" bDelta False bValue False } }
 		Children { {  TargetIndex 5 Text "Next" SpeakerState "None" bIncludeInAllOptionListIfUnsatisfied True } }
 	}
 	// 4
@@ -110,6 +117,7 @@ Node Nodes
 		bCheckChildrenOnEvaluation False
 		VoiceSoundWave ""
 		VoiceDialogueWave ""
+		GenericData ""
 		EnterEvents { {  ParticipantName "MyCharacterName" EventType "EDlgEventType::DlgEventModifyInt" EventName "ColorChangeRequest" IntValue 1 FloatValue 0.0 NameValue "None" bDelta True bValue False } }
 		Children
 		{
@@ -129,6 +137,7 @@ Just leave me alone!"
 		bCheckChildrenOnEvaluation False
 		VoiceSoundWave ""
 		VoiceDialogueWave ""
+		GenericData ""
 		Children { {  TargetIndex 11 Text "Finish" SpeakerState "None" bIncludeInAllOptionListIfUnsatisfied True } }
 	}
 	// 8

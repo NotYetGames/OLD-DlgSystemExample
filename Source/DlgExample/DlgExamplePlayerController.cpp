@@ -16,19 +16,19 @@ ADlgExamplePlayerController::ADlgExamplePlayerController()
 	DefaultMouseCursor = EMouseCursor::Crosshairs;
 }
 
-void ADlgExamplePlayerController::StartDialogue(class UDlgDialogue* Dialogue, UObject* OtherParticipant)
-{
-	ActiveContext = UDlgManager::StartDialogue2(Dialogue, GetPawn(), OtherParticipant);
-}
+// void ADlgExamplePlayerController::StartDialogue(class UDlgDialogue* Dialogue, UObject* OtherParticipant)
+// {
+// 	ActiveContext = UDlgManager::StartDialogue2(Dialogue, GetPawn(), OtherParticipant);
+// }
 
-void ADlgExamplePlayerController::SelectDialogueOption(int32 Index)
-{
-	if (ActiveContext == nullptr || Index < 0 || Index >= ActiveContext->GetOptionNum())
-		return;
+// void ADlgExamplePlayerController::SelectDialogueOption(int32 Index)
+// {
+// 	if (ActiveContext == nullptr || Index < 0 || Index >= ActiveContext->GetOptionNum())
+// 		return;
 
-	if (!ActiveContext->ChooseChild(Index))
-		ActiveContext = nullptr;
-}
+// 	if (!ActiveContext->ChooseChild(Index))
+// 		ActiveContext = nullptr;
+// }
 
 void ADlgExamplePlayerController::PlayerTick(float DeltaTime)
 {
@@ -49,7 +49,7 @@ void ADlgExamplePlayerController::SetupInputComponent()
 	InputComponent->BindAction("SetDestination", IE_Pressed, this, &ADlgExamplePlayerController::OnSetDestinationPressed);
 	InputComponent->BindAction("SetDestination", IE_Released, this, &ADlgExamplePlayerController::OnSetDestinationReleased);
 
-	// support touch devices 
+	// support touch devices
 	InputComponent->BindTouch(EInputEvent::IE_Pressed, this, &ADlgExamplePlayerController::MoveToTouchLocation);
 	InputComponent->BindTouch(EInputEvent::IE_Repeat, this, &ADlgExamplePlayerController::MoveToTouchLocation);
 
