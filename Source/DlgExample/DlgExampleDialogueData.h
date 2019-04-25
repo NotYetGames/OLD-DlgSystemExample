@@ -5,7 +5,9 @@
 #include "CoreMinimal.h"
 #include "DlgExampleDialogueData.generated.h"
 
-
+//
+// C++ version
+//
 USTRUCT(BlueprintType, Blueprintable)
 struct FDlgExampleDialogueData
 {

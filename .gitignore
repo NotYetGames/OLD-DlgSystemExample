@@ -88,3 +88,9 @@ core
 Config/QuickSave_1.txt
 Config/QuickSave_0.txt
 *.autosave
+LocalDerivedDataCache/
+Packaged/
+
+# All
+*_BuiltData.uasset
+Content/TopDownCPP/Maps/TopDownExampleMap_BuiltData.uasset
