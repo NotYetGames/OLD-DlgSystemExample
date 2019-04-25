@@ -6,6 +6,8 @@
 #include "GameFramework/PlayerController.h"
 #include "DlgExamplePlayerController.generated.h"
 
+class UDlgContext;
+
 UCLASS()
 class ADlgExamplePlayerController : public APlayerController
 {
@@ -14,11 +16,11 @@ class ADlgExamplePlayerController : public APlayerController
 public:
 	ADlgExamplePlayerController();
 
-	UFUNCTION(BlueprintCallable, Category = DlgSystem)
-	void StartDialogue(class UDlgDialogue* Dialogue, UObject* OtherParticipant);
+	// UFUNCTION(BlueprintCallable, Category = DlgSystem)
+	// void StartDialogue(class UDlgDialogue* Dialogue, UObject* OtherParticipant);
 
-	UFUNCTION(BlueprintCallable, Category = DlgSystem)
-	void SelectDialogueOption(int32 Index);
+	// UFUNCTION(BlueprintCallable, Category = DlgSystem)
+	// void SelectDialogueOption(int32 Index);
 
 protected:
 	/** True if the controlled character should navigate to the mouse cursor. */
@@ -37,7 +39,7 @@ protected:
 
 	/** Navigate player to the current touch location. */
 	void MoveToTouchLocation(const ETouchIndex::Type FingerIndex, const FVector Location);
-	
+
 	/** Navigate player to the given world location. */
 	void SetNewMoveDestination(const FVector DestLocation);
 
@@ -47,12 +49,7 @@ protected:
 	UFUNCTION(BlueprintCallable)
 	void OnSetDestinationReleased();
 
-
 protected:
-
-	UPROPERTY(BlueprintReadOnly)
-	class UDlgContext* ActiveContext = nullptr;
-
+	UPROPERTY(BlueprintReadWrite)
+	UDlgContext* ActiveContext = nullptr;
 };
-
-
