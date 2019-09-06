@@ -52,6 +52,9 @@ PackagedPlugin/
 # Precompiled Assets
 SourceArt/**/*.png
 SourceArt/**/*.tga
+Tools
+_ReSharper.Caches/
+DerivedDataCacheLocal/
 
 # Ignore builds, binary, configuration, cache and starter content directories
 Build/
@@ -94,3 +97,4 @@ Packaged/
 # All
 *_BuiltData.uasset
 Content/TopDownCPP/Maps/TopDownExampleMap_BuiltData.uasset
+Tools
