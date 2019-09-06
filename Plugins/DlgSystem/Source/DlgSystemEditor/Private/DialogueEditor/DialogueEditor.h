@@ -17,6 +17,7 @@ class IDetailsView;
 class UDlgDialogue;
 class SDialoguePalette;
 class SFindInDialogues;
+class FTabManager;
 
 //////////////////////////////////////////////////////////////////////////
 // FDialogueEditor
@@ -32,8 +33,8 @@ public:
 	virtual ~FDialogueEditor();
 
 	//~ Begin IToolkit interface
-	void RegisterTabSpawners(const TSharedRef<class FTabManager>& TabManager) override;
-	void UnregisterTabSpawners(const TSharedRef<class FTabManager>& TabManager) override;
+	void RegisterTabSpawners(const TSharedRef<FTabManager>& TabManager) override;
+	void UnregisterTabSpawners(const TSharedRef<FTabManager>& TabManager) override;
 	FText GetBaseToolkitName() const override;
 	FText GetToolkitName() const override;
 	FName GetToolkitFName() const override { return FName(TEXT("DialogueEditor")); }
@@ -58,17 +59,6 @@ public:
 	//~ End of IAssetEditorInstance
 
 	//~ Begin FEditorUndoClient
-
-	/**
-	 * Called to see if the context of the current undo/redo operation is a match for the client
-	 * Default state matching old context-less undo is Context="" and PrimaryObject=NULL
-	 *
-	 * @param InContext		A text string providing context for the undo operation; can be the empty string
-	 * @param PrimaryObject	The object marked as the primary object for the undo operation; can be NULL
-	 *
-	 * @return	True if client wishes to handle the undo/redo operation for this context. False otherwise
-	 */
-	bool MatchesContext(const FString& InContext, UObject* PrimaryObject) const override { return true; }
 
 	/**
 	 * Signal that client should run any PostUndo code
