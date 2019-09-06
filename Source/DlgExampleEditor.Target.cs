@@ -9,5 +9,7 @@ public class DlgExampleEditorTarget : TargetRules
 	{
 		Type = TargetType.Editor;
 		ExtraModuleNames.Add("DlgExample");
+
+		bLegacyPublicIncludePaths = false;
 	}
 }

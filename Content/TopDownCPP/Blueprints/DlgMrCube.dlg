@@ -8,6 +8,7 @@ Node_Speech StartNode
 	bIsVirtualParent False
 	OwnerName "None"
 	bCheckChildrenOnEvaluation False
+	NodeData ""
 	VoiceSoundWave ""
 	VoiceDialogueWave ""
 	GenericData ""
@@ -32,6 +33,7 @@ Node Nodes
 		bIsVirtualParent True
 		OwnerName "MrCube"
 		bCheckChildrenOnEvaluation False
+		NodeData ""
 		VoiceSoundWave ""
 		VoiceDialogueWave ""
 		GenericData ""
@@ -46,6 +48,7 @@ Node Nodes
 		bIsVirtualParent True
 		OwnerName "MrCube"
 		bCheckChildrenOnEvaluation False
+		NodeData ""
 		VoiceSoundWave ""
 		VoiceDialogueWave ""
 		GenericData ""
@@ -57,8 +60,9 @@ Node Nodes
 		Text ""
 		SpeakerState "None"
 		bIsVirtualParent False
-		OwnerName "MrCube"
+		OwnerName "None"
 		bCheckChildrenOnEvaluation False
+		NodeData ""
 		VoiceSoundWave ""
 		VoiceDialogueWave ""
 		GenericData ""
@@ -76,6 +80,14 @@ Node Nodes
 		bIsVirtualParent False
 		OwnerName "MyCharacterName"
 		bCheckChildrenOnEvaluation False
+		BP_TestMrCubeNodeData_C NodeData {  Bool False Int 58 Int64 100 Texture "/Game/Mannequin/Character/Materials/MaterialLayers/T_ML_Rubber_Blue_01_N.T_ML_Rubber_Blue_01_N" Color {  } LinearColor {  R 0.0 G 0.0 B 0.0 A 0.0 } NamedColor
+ {
+ 	Name "None"
+ 	Value {  }
+ } SlateColor
+ {
+ 	SpecifiedColor {  R 1.0 G 0.0 B 1.0 A 1.0 }
+ } }
 		VoiceSoundWave ""
 		VoiceDialogueWave ""
 		GenericData ""
@@ -113,13 +125,14 @@ Node Nodes
 		bIsVirtualParent False
 		OwnerName "MrCube"
 		bCheckChildrenOnEvaluation False
+		NodeData ""
 		VoiceSoundWave ""
 		VoiceDialogueWave ""
 		GenericData ""
 		EnterEvents { {  ParticipantName "MyCharacterName" EventType "EDlgEventType::DlgEventModifyInt" EventName "ColorChangeRequest" IntValue 1 FloatValue 0.0 NameValue "None" bDelta True bValue False } }
 		Children
 		{
-			{  TargetIndex 8 Text "Red" SpeakerState "None" bIncludeInAllOptionListIfUnsatisfied True }
+			{  TargetIndex 8 Text "Red" SpeakerState "Angry" bIncludeInAllOptionListIfUnsatisfied True }
 			{  TargetIndex 9 Text "Green" SpeakerState "None" bIncludeInAllOptionListIfUnsatisfied True }
 			{  TargetIndex 10 Text "Blue" SpeakerState "None" bIncludeInAllOptionListIfUnsatisfied True }
 		}
@@ -133,6 +146,7 @@ Just leave me alone!"
 		bIsVirtualParent False
 		OwnerName "MrCube"
 		bCheckChildrenOnEvaluation False
+		NodeData ""
 		VoiceSoundWave ""
 		VoiceDialogueWave ""
 		GenericData ""

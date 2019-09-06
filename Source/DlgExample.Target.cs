@@ -9,5 +9,7 @@ public class DlgExampleTarget : TargetRules
 	{
 		Type = TargetType.Game;
 		ExtraModuleNames.Add("DlgExample");
+
+		bLegacyPublicIncludePaths = false;
 	}
 }
