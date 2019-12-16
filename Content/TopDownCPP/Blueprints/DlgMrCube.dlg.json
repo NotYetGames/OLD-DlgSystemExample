@@ -1,0 +1,526 @@
+{
+	"__type__": "DlgDialogue",
+	"DlgVersion": 8,
+	"DlgName": "DlgMrCube",
+	"DlgGuid": "CA66C1494A5208F97F7B908C24F9A8A6",
+	"DlgParticipantClasses": [
+		{
+			"ParticipantName": "MrCube",
+			"ParticipantClass": "/Game/TopDownCPP/Blueprints/MrCube.MrCube_C"
+		},
+		{
+			"ParticipantName": "MyCharacterName",
+			"ParticipantClass": "/Game/TopDownCPP/Blueprints/TopDownCharacter.TopDownCharacter_C"
+		}
+	],
+	"StartNode":
+	{
+		"__type__": "DlgNode_Speech",
+		"bIsVirtualParent": false,
+		"Text": "",
+		"TextArguments": [],
+		"SpeakerState": "None",
+		"NodeData": null,
+		"VoiceSoundWave": "",
+		"VoiceDialogueWave": "",
+		"GenericData": "",
+		"OwnerName": "None",
+		"bCheckChildrenOnEvaluation": false,
+		"EnterConditions": [],
+		"EnterEvents": [],
+		"Children": [
+			{
+				"TargetIndex": 0,
+				"Conditions": [],
+				"SpeakerState": "None",
+				"bIncludeInAllOptionListIfUnsatisfied": true,
+				"Text": "Next Remapped",
+				"TextArguments": []
+			},
+			{
+				"TargetIndex": 1,
+				"Conditions": [],
+				"SpeakerState": "None",
+				"bIncludeInAllOptionListIfUnsatisfied": true,
+				"Text": "Next Remapped",
+				"TextArguments": []
+			}
+		]
+	},
+	"Nodes": [
+		{
+			"__index__": 0,
+			"__type__": "DlgNode_Speech",
+			"bIsVirtualParent": true,
+			"Text": "I am Mr. Cube! What can I do for you?kkjhhjklkjljk\r\njhjhgjgh",
+			"TextArguments": [],
+			"SpeakerState": "None",
+			"NodeData": null,
+			"VoiceSoundWave": "",
+			"VoiceDialogueWave": "",
+			"GenericData": "",
+			"OwnerName": "MrCube",
+			"bCheckChildrenOnEvaluation": false,
+			"EnterConditions": [
+				{
+					"Strength": "EDlgConditionStrength::Strong",
+					"ConditionType": "EDlgConditionType::WasNodeVisited",
+					"ParticipantName": "None",
+					"CallbackName": "None",
+					"Operation": "EDlgOperation::Equal",
+					"CompareType": "EDlgCompare::ToConst",
+					"OtherParticipantName": "None",
+					"OtherVariableName": "None",
+					"IntValue": 0,
+					"FloatValue": 0,
+					"NameValue": "None",
+					"bBoolValue": false,
+					"bLongTermMemory": true
+				}
+			],
+			"EnterEvents": [],
+			"Children": [
+				{
+					"TargetIndex": 2,
+					"Conditions": [],
+					"SpeakerState": "None",
+					"bIncludeInAllOptionListIfUnsatisfied": true,
+					"Text": "",
+					"TextArguments": []
+				}
+			]
+		},
+		{
+			"__index__": 1,
+			"__type__": "DlgNode_Speech",
+			"bIsVirtualParent": true,
+			"Text": "Good to see you again!",
+			"TextArguments": [],
+			"SpeakerState": "None",
+			"NodeData": null,
+			"VoiceSoundWave": "",
+			"VoiceDialogueWave": "",
+			"GenericData": "",
+			"OwnerName": "MrCube",
+			"bCheckChildrenOnEvaluation": false,
+			"EnterConditions": [],
+			"EnterEvents": [],
+			"Children": [
+				{
+					"TargetIndex": 2,
+					"Conditions": [],
+					"SpeakerState": "None",
+					"bIncludeInAllOptionListIfUnsatisfied": true,
+					"Text": "",
+					"TextArguments": []
+				}
+			]
+		},
+		{
+			"__index__": 2,
+			"__type__": "DlgNode_Speech",
+			"bIsVirtualParent": false,
+			"Text": "",
+			"TextArguments": [],
+			"SpeakerState": "None",
+			"NodeData": null,
+			"VoiceSoundWave": "",
+			"VoiceDialogueWave": "",
+			"GenericData": "",
+			"OwnerName": "None",
+			"bCheckChildrenOnEvaluation": false,
+			"EnterConditions": [],
+			"EnterEvents": [],
+			"Children": [
+				{
+					"TargetIndex": 3,
+					"Conditions": [],
+					"SpeakerState": "None",
+					"bIncludeInAllOptionListIfUnsatisfied": true,
+					"Text": "Ask him to change his color",
+					"TextArguments": []
+				},
+				{
+					"TargetIndex": 4,
+					"Conditions": [],
+					"SpeakerState": "None",
+					"bIncludeInAllOptionListIfUnsatisfied": true,
+					"Text": "Leave",
+					"TextArguments": []
+				}
+			]
+		},
+		{
+			"__index__": 3,
+			"__type__": "DlgNode_Speech",
+			"bIsVirtualParent": false,
+			"Text": "Could you change your color?",
+			"TextArguments": [],
+			"SpeakerState": "None",
+			"NodeData":
+			{
+				"__type__": "BP_TestMrCubeNodeData_C",
+				"Bool": false,
+				"Texture": "/Game/Mannequin/Character/Materials/MaterialLayers/T_ML_Rubber_Blue_01_N.T_ML_Rubber_Blue_01_N",
+				"Color":
+				{
+					"B": 0,
+					"G": 0,
+					"R": 0,
+					"A": 0
+				},
+				"LinearColor":
+				{
+					"R": 0,
+					"G": 0,
+					"B": 0,
+					"A": 0
+				},
+				"NamedColor":
+				{
+					"Value":
+					{
+						"B": 0,
+						"G": 0,
+						"R": 0,
+						"A": 0
+					},
+					"Name": "None"
+				},
+				"SlateColor":
+				{
+					"SpecifiedColor":
+					{
+						"R": 1,
+						"G": 0,
+						"B": 1,
+						"A": 1
+					},
+					"ColorUseRule": "ESlateColorStylingMode::UseColor_Specified"
+				},
+				"Int": 58,
+				"Int64": 100
+			},
+			"VoiceSoundWave": "",
+			"VoiceDialogueWave": "",
+			"GenericData": "",
+			"OwnerName": "MyCharacterName",
+			"bCheckChildrenOnEvaluation": false,
+			"EnterConditions": [],
+			"EnterEvents": [],
+			"Children": [
+				{
+					"TargetIndex": 5,
+					"Conditions": [],
+					"SpeakerState": "None",
+					"bIncludeInAllOptionListIfUnsatisfied": true,
+					"Text": "Red",
+					"TextArguments": []
+				}
+			]
+		},
+		{
+			"__index__": 4,
+			"__type__": "DlgNode_End",
+			"OwnerName": "MrCube",
+			"bCheckChildrenOnEvaluation": false,
+			"EnterConditions": [],
+			"EnterEvents": [],
+			"Children": []
+		},
+		{
+			"__index__": 5,
+			"__type__": "DlgNode_Selector",
+			"SelectorType": "EDlgNodeSelectorType::First",
+			"OwnerName": "MrCube",
+			"bCheckChildrenOnEvaluation": true,
+			"EnterConditions": [],
+			"EnterEvents": [],
+			"Children": [
+				{
+					"TargetIndex": 6,
+					"Conditions": [
+						{
+							"Strength": "EDlgConditionStrength::Strong",
+							"ConditionType": "EDlgConditionType::IntCall",
+							"ParticipantName": "MyCharacterName",
+							"CallbackName": "ColorChangeRequest",
+							"Operation": "EDlgOperation::LessOrEqual",
+							"CompareType": "EDlgCompare::ToConst",
+							"OtherParticipantName": "None",
+							"OtherVariableName": "None",
+							"IntValue": 3,
+							"FloatValue": 0,
+							"NameValue": "None",
+							"bBoolValue": true,
+							"bLongTermMemory": true
+						}
+					],
+					"SpeakerState": "None",
+					"bIncludeInAllOptionListIfUnsatisfied": true,
+					"Text": "",
+					"TextArguments": []
+				},
+				{
+					"TargetIndex": 7,
+					"Conditions": [],
+					"SpeakerState": "None",
+					"bIncludeInAllOptionListIfUnsatisfied": true,
+					"Text": "",
+					"TextArguments": []
+				}
+			]
+		},
+		{
+			"__index__": 6,
+			"__type__": "DlgNode_Speech",
+			"bIsVirtualParent": false,
+			"Text": "Sure. What color would you like to see?",
+			"TextArguments": [],
+			"SpeakerState": "Angry",
+			"NodeData": null,
+			"VoiceSoundWave": "",
+			"VoiceDialogueWave": "",
+			"GenericData": "",
+			"OwnerName": "MrCube",
+			"bCheckChildrenOnEvaluation": false,
+			"EnterConditions": [],
+			"EnterEvents": [
+				{
+					"ParticipantName": "MyCharacterName",
+					"EventType": "EDlgEventType::ModifyInt",
+					"EventName": "ColorChangeRequest",
+					"IntValue": 1,
+					"FloatValue": 0,
+					"NameValue": "None",
+					"bDelta": true,
+					"bValue": false
+				}
+			],
+			"Children": [
+				{
+					"TargetIndex": 8,
+					"Conditions": [],
+					"SpeakerState": "Angry",
+					"bIncludeInAllOptionListIfUnsatisfied": true,
+					"Text": "Red",
+					"TextArguments": []
+				},
+				{
+					"TargetIndex": 9,
+					"Conditions": [],
+					"SpeakerState": "None",
+					"bIncludeInAllOptionListIfUnsatisfied": true,
+					"Text": "Green",
+					"TextArguments": []
+				},
+				{
+					"TargetIndex": 10,
+					"Conditions": [],
+					"SpeakerState": "None",
+					"bIncludeInAllOptionListIfUnsatisfied": true,
+					"Text": "Blue",
+					"TextArguments": []
+				}
+			]
+		},
+		{
+			"__index__": 7,
+			"__type__": "DlgNode_Speech",
+			"bIsVirtualParent": false,
+			"Text": "I can't keep changing my color all the time!\r\nJust leave me alone!",
+			"TextArguments": [],
+			"SpeakerState": "Happy",
+			"NodeData": null,
+			"VoiceSoundWave": "",
+			"VoiceDialogueWave": "",
+			"GenericData": "",
+			"OwnerName": "MrCube",
+			"bCheckChildrenOnEvaluation": false,
+			"EnterConditions": [],
+			"EnterEvents": [],
+			"Children": [
+				{
+					"TargetIndex": 11,
+					"Conditions": [],
+					"SpeakerState": "None",
+					"bIncludeInAllOptionListIfUnsatisfied": true,
+					"Text": "Finish",
+					"TextArguments": []
+				}
+			]
+		},
+		{
+			"__index__": 8,
+			"__type__": "DlgNode_End",
+			"OwnerName": "MrCube",
+			"bCheckChildrenOnEvaluation": false,
+			"EnterConditions": [],
+			"EnterEvents": [
+				{
+					"ParticipantName": "MrCube",
+					"EventType": "EDlgEventType::Event",
+					"EventName": "ColorToRed",
+					"IntValue": 0,
+					"FloatValue": 0,
+					"NameValue": "None",
+					"bDelta": false,
+					"bValue": false
+				}
+			],
+			"Children": []
+		},
+		{
+			"__index__": 9,
+			"__type__": "DlgNode_End",
+			"OwnerName": "MrCube",
+			"bCheckChildrenOnEvaluation": false,
+			"EnterConditions": [],
+			"EnterEvents": [
+				{
+					"ParticipantName": "MrCube",
+					"EventType": "EDlgEventType::Event",
+					"EventName": "ColorToGreen",
+					"IntValue": 0,
+					"FloatValue": 0,
+					"NameValue": "None",
+					"bDelta": false,
+					"bValue": false
+				}
+			],
+			"Children": []
+		},
+		{
+			"__index__": 10,
+			"__type__": "DlgNode_End",
+			"OwnerName": "MrCube",
+			"bCheckChildrenOnEvaluation": false,
+			"EnterConditions": [],
+			"EnterEvents": [
+				{
+					"ParticipantName": "None",
+					"EventType": "EDlgEventType::Event",
+					"EventName": "ColorToBlue",
+					"IntValue": 0,
+					"FloatValue": 0,
+					"NameValue": "None",
+					"bDelta": false,
+					"bValue": false
+				}
+			],
+			"Children": []
+		},
+		{
+			"__index__": 11,
+			"__type__": "DlgNode_End",
+			"OwnerName": "MrCube",
+			"bCheckChildrenOnEvaluation": false,
+			"EnterConditions": [],
+			"EnterEvents": [],
+			"Children": []
+		},
+		{
+			"__index__": 12,
+			"__type__": "DlgNode_SpeechSequence",
+			"SpeechSequence": [
+				{
+					"Speaker": "None",
+					"Text": "test sequence 1",
+					"EdgeText": "test sequence edge 1",
+					"SpeakerState": "None",
+					"NodeData": null,
+					"VoiceSoundWave": "",
+					"VoiceDialogueWave": "",
+					"GenericData": ""
+				},
+				{
+					"Speaker": "None",
+					"Text": "",
+					"EdgeText": "Next Remapped",
+					"SpeakerState": "None",
+					"NodeData": null,
+					"VoiceSoundWave": "",
+					"VoiceDialogueWave": "",
+					"GenericData": ""
+				},
+				{
+					"Speaker": "None",
+					"Text": "",
+					"EdgeText": "fdsdfsfds",
+					"SpeakerState": "None",
+					"NodeData": null,
+					"VoiceSoundWave": "",
+					"VoiceDialogueWave": "",
+					"GenericData": ""
+				},
+				{
+					"Speaker": "None",
+					"Text": "test sequence 3",
+					"EdgeText": "test sequence edge 3",
+					"SpeakerState": "None",
+					"NodeData": null,
+					"VoiceSoundWave": "",
+					"VoiceDialogueWave": "",
+					"GenericData": ""
+				},
+				{
+					"Speaker": "None",
+					"Text": "",
+					"EdgeText": "Next Remapped",
+					"SpeakerState": "None",
+					"NodeData": null,
+					"VoiceSoundWave": "",
+					"VoiceDialogueWave": "",
+					"GenericData": ""
+				}
+			],
+			"InnerEdges": [
+				{
+					"TargetIndex": -1,
+					"Conditions": [],
+					"SpeakerState": "None",
+					"bIncludeInAllOptionListIfUnsatisfied": true,
+					"Text": "test sequence edge 1",
+					"TextArguments": []
+				},
+				{
+					"TargetIndex": -1,
+					"Conditions": [],
+					"SpeakerState": "None",
+					"bIncludeInAllOptionListIfUnsatisfied": true,
+					"Text": "Next",
+					"TextArguments": []
+				},
+				{
+					"TargetIndex": -1,
+					"Conditions": [],
+					"SpeakerState": "None",
+					"bIncludeInAllOptionListIfUnsatisfied": true,
+					"Text": "fdsdfsfds",
+					"TextArguments": []
+				},
+				{
+					"TargetIndex": -1,
+					"Conditions": [],
+					"SpeakerState": "None",
+					"bIncludeInAllOptionListIfUnsatisfied": true,
+					"Text": "test sequence edge 3",
+					"TextArguments": []
+				},
+				{
+					"TargetIndex": -1,
+					"Conditions": [],
+					"SpeakerState": "None",
+					"bIncludeInAllOptionListIfUnsatisfied": true,
+					"Text": "Next",
+					"TextArguments": []
+				}
+			],
+			"OwnerName": "MrCube",
+			"bCheckChildrenOnEvaluation": false,
+			"EnterConditions": [],
+			"EnterEvents": [],
+			"Children": []
+		}
+	]
+}

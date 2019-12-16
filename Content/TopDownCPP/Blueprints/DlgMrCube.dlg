@@ -1,11 +1,11 @@
-DlgVersion 7
+DlgVersion 8
 DlgName "DlgMrCube"
 DlgGuid {  A -899235511 B 1246890233 C 2138804364 D 620341414 }
 Node_Speech StartNode
 {
+	bIsVirtualParent False
 	Text ""
 	SpeakerState "None"
-	bIsVirtualParent False
 	OwnerName "None"
 	bCheckChildrenOnEvaluation False
 	NodeData ""
@@ -14,8 +14,8 @@ Node_Speech StartNode
 	GenericData ""
 	Children
 	{
-		{  TargetIndex 0 Text "Next" SpeakerState "None" bIncludeInAllOptionListIfUnsatisfied True }
-		{  TargetIndex 1 Text "" SpeakerState "None" bIncludeInAllOptionListIfUnsatisfied True }
+		{  TargetIndex 0 SpeakerState "None" bIncludeInAllOptionListIfUnsatisfied True Text "Next Remapped" }
+		{  TargetIndex 1 SpeakerState "None" bIncludeInAllOptionListIfUnsatisfied True Text "Next Remapped" }
 	}
 }
 DlgParticipantClasses
@@ -28,38 +28,39 @@ Node Nodes
 	// 0
 	Node_Speech 
 	{
-		Text "I am Mr. Cube! What can I do for you?"
-		SpeakerState "None"
 		bIsVirtualParent True
+		Text "I am Mr. Cube! What can I do for you?kkjhhjklkjljk
+jhjhgjgh"
+		SpeakerState "None"
 		OwnerName "MrCube"
 		bCheckChildrenOnEvaluation False
 		NodeData ""
 		VoiceSoundWave ""
 		VoiceDialogueWave ""
 		GenericData ""
-		EnterConditions { {  Strength "EDlgConditionStrength::DlgConditionStrengthStrong" ConditionType "EDlgConditionType::DlgConditionNodeVisited" ParticipantName "None" CallbackName "None" Operation "EDlgOperation::DlgEqual" CompareType "EDlgCompareType::DlgCompareToConst" OtherParticipantName "None" OtherVariableName "None" IntValue 0 FloatValue 0.0 NameValue "None" bBoolValue False bLongTermMemory True } }
-		Children { {  TargetIndex 2 Text "Next" SpeakerState "None" bIncludeInAllOptionListIfUnsatisfied True } }
+		EnterConditions { {  Strength "EDlgConditionStrength::Strong" ConditionType "EDlgConditionType::WasNodeVisited" ParticipantName "None" CallbackName "None" Operation "EDlgOperation::Equal" CompareType "EDlgCompare::ToConst" OtherParticipantName "None" OtherVariableName "None" IntValue 0 FloatValue 0.0 NameValue "None" bBoolValue False bLongTermMemory True } }
+		Children { {  TargetIndex 2 SpeakerState "None" bIncludeInAllOptionListIfUnsatisfied True Text "" } }
 	}
 	// 1
 	Node_Speech 
 	{
+		bIsVirtualParent True
 		Text "Good to see you again!"
 		SpeakerState "None"
-		bIsVirtualParent True
 		OwnerName "MrCube"
 		bCheckChildrenOnEvaluation False
 		NodeData ""
 		VoiceSoundWave ""
 		VoiceDialogueWave ""
 		GenericData ""
-		Children { {  TargetIndex 2 Text "Next" SpeakerState "None" bIncludeInAllOptionListIfUnsatisfied True } }
+		Children { {  TargetIndex 2 SpeakerState "None" bIncludeInAllOptionListIfUnsatisfied True Text "" } }
 	}
 	// 2
 	Node_Speech 
 	{
+		bIsVirtualParent False
 		Text ""
 		SpeakerState "None"
-		bIsVirtualParent False
 		OwnerName "None"
 		bCheckChildrenOnEvaluation False
 		NodeData ""
@@ -68,16 +69,16 @@ Node Nodes
 		GenericData ""
 		Children
 		{
-			{  TargetIndex 3 Text "Ask him to change his color" SpeakerState "None" bIncludeInAllOptionListIfUnsatisfied True }
-			{  TargetIndex 4 Text "Leave" SpeakerState "None" bIncludeInAllOptionListIfUnsatisfied True }
+			{  TargetIndex 3 SpeakerState "None" bIncludeInAllOptionListIfUnsatisfied True Text "Ask him to change his color" }
+			{  TargetIndex 4 SpeakerState "None" bIncludeInAllOptionListIfUnsatisfied True Text "Leave" }
 		}
 	}
 	// 3
 	Node_Speech 
 	{
+		bIsVirtualParent False
 		Text "Could you change your color?"
 		SpeakerState "None"
-		bIsVirtualParent False
 		OwnerName "MyCharacterName"
 		bCheckChildrenOnEvaluation False
 		BP_TestMrCubeNodeData_C NodeData {  Bool False Int 58 Int64 100 Texture "/Game/Mannequin/Character/Materials/MaterialLayers/T_ML_Rubber_Blue_01_N.T_ML_Rubber_Blue_01_N" Color {  } LinearColor {  R 0.0 G 0.0 B 0.0 A 0.0 } NamedColor
@@ -91,7 +92,7 @@ Node Nodes
 		VoiceSoundWave ""
 		VoiceDialogueWave ""
 		GenericData ""
-		Children { {  TargetIndex 5 Text "Next" SpeakerState "None" bIncludeInAllOptionListIfUnsatisfied True } }
+		Children { {  TargetIndex 5 SpeakerState "None" bIncludeInAllOptionListIfUnsatisfied True Text "Red" } }
 	}
 	// 4
 	Node_End 
@@ -102,81 +103,148 @@ Node Nodes
 	// 5
 	Node_Selector 
 	{
-		SelectorType "EDlgNodeSelectorType::DlgNodeSelectorFirst"
+		SelectorType "EDlgNodeSelectorType::First"
 		OwnerName "MrCube"
 		bCheckChildrenOnEvaluation True
 		Children
 		{
 			{
 				TargetIndex 6
-				Text "Next"
 				SpeakerState "None"
 				bIncludeInAllOptionListIfUnsatisfied True
-				Conditions { {  Strength "EDlgConditionStrength::DlgConditionStrengthStrong" ConditionType "EDlgConditionType::DlgConditionIntCall" ParticipantName "MyCharacterName" CallbackName "ColorChangeRequest" Operation "EDlgOperation::DlgLessOrEqual" CompareType "EDlgCompareType::DlgCompareToConst" OtherParticipantName "None" OtherVariableName "None" IntValue 3 FloatValue 0.0 NameValue "None" bBoolValue True bLongTermMemory True } }
+				Text ""
+				Conditions { {  Strength "EDlgConditionStrength::Strong" ConditionType "EDlgConditionType::IntCall" ParticipantName "MyCharacterName" CallbackName "ColorChangeRequest" Operation "EDlgOperation::LessOrEqual" CompareType "EDlgCompare::ToConst" OtherParticipantName "None" OtherVariableName "None" IntValue 3 FloatValue 0.0 NameValue "None" bBoolValue True bLongTermMemory True } }
 			}
-			{  TargetIndex 7 Text "" SpeakerState "None" bIncludeInAllOptionListIfUnsatisfied True }
+			{  TargetIndex 7 SpeakerState "None" bIncludeInAllOptionListIfUnsatisfied True Text "" }
 		}
 	}
 	// 6
 	Node_Speech 
 	{
+		bIsVirtualParent False
 		Text "Sure. What color would you like to see?"
 		SpeakerState "Angry"
-		bIsVirtualParent False
 		OwnerName "MrCube"
 		bCheckChildrenOnEvaluation False
 		NodeData ""
 		VoiceSoundWave ""
 		VoiceDialogueWave ""
 		GenericData ""
-		EnterEvents { {  ParticipantName "MyCharacterName" EventType "EDlgEventType::DlgEventModifyInt" EventName "ColorChangeRequest" IntValue 1 FloatValue 0.0 NameValue "None" bDelta True bValue False } }
+		EnterEvents { {  ParticipantName "MyCharacterName" EventType "EDlgEventType::ModifyInt" EventName "ColorChangeRequest" IntValue 1 FloatValue 0.0 NameValue "None" bDelta True bValue False } }
 		Children
 		{
-			{  TargetIndex 8 Text "Red" SpeakerState "Angry" bIncludeInAllOptionListIfUnsatisfied True }
-			{  TargetIndex 9 Text "Green" SpeakerState "None" bIncludeInAllOptionListIfUnsatisfied True }
-			{  TargetIndex 10 Text "Blue" SpeakerState "None" bIncludeInAllOptionListIfUnsatisfied True }
+			{  TargetIndex 8 SpeakerState "Angry" bIncludeInAllOptionListIfUnsatisfied True Text "Red" }
+			{  TargetIndex 9 SpeakerState "None" bIncludeInAllOptionListIfUnsatisfied True Text "Green" }
+			{  TargetIndex 10 SpeakerState "None" bIncludeInAllOptionListIfUnsatisfied True Text "Blue" }
 		}
 	}
 	// 7
 	Node_Speech 
 	{
+		bIsVirtualParent False
 		Text "I can't keep changing my color all the time!
 Just leave me alone!"
 		SpeakerState "Happy"
-		bIsVirtualParent False
 		OwnerName "MrCube"
 		bCheckChildrenOnEvaluation False
 		NodeData ""
 		VoiceSoundWave ""
 		VoiceDialogueWave ""
 		GenericData ""
-		Children { {  TargetIndex 11 Text "Finish" SpeakerState "None" bIncludeInAllOptionListIfUnsatisfied True } }
+		Children { {  TargetIndex 11 SpeakerState "None" bIncludeInAllOptionListIfUnsatisfied True Text "Finish" } }
 	}
 	// 8
 	Node_End 
 	{
 		OwnerName "MrCube"
 		bCheckChildrenOnEvaluation False
-		EnterEvents { {  ParticipantName "MrCube" EventType "EDlgEventType::DlgEventEvent" EventName "ColorToRed" IntValue 0 FloatValue 0.0 NameValue "None" bDelta False bValue False } }
+		EnterEvents { {  ParticipantName "MrCube" EventType "EDlgEventType::Event" EventName "ColorToRed" IntValue 0 FloatValue 0.0 NameValue "None" bDelta False bValue False } }
 	}
 	// 9
 	Node_End 
 	{
 		OwnerName "MrCube"
 		bCheckChildrenOnEvaluation False
-		EnterEvents { {  ParticipantName "MrCube" EventType "EDlgEventType::DlgEventEvent" EventName "ColorToGreen" IntValue 0 FloatValue 0.0 NameValue "None" bDelta False bValue False } }
+		EnterEvents { {  ParticipantName "MrCube" EventType "EDlgEventType::Event" EventName "ColorToGreen" IntValue 0 FloatValue 0.0 NameValue "None" bDelta False bValue False } }
 	}
 	// 10
 	Node_End 
 	{
 		OwnerName "MrCube"
 		bCheckChildrenOnEvaluation False
-		EnterEvents { {  ParticipantName "None" EventType "EDlgEventType::DlgEventEvent" EventName "ColorToBlue" IntValue 0 FloatValue 0.0 NameValue "None" bDelta False bValue False } }
+		EnterEvents { {  ParticipantName "None" EventType "EDlgEventType::Event" EventName "ColorToBlue" IntValue 0 FloatValue 0.0 NameValue "None" bDelta False bValue False } }
 	}
 	// 11
 	Node_End 
 	{
 		OwnerName "MrCube"
 		bCheckChildrenOnEvaluation False
+	}
+	// 12
+	Node_SpeechSequence 
+	{
+		OwnerName "MrCube"
+		bCheckChildrenOnEvaluation False
+		SpeechSequence
+		{
+			{
+				Speaker "None"
+				Text "test sequence 1"
+				EdgeText "test sequence edge 1"
+				SpeakerState "None"
+				NodeData ""
+				VoiceSoundWave ""
+				VoiceDialogueWave ""
+				GenericData ""
+			}
+			{
+				Speaker "None"
+				Text ""
+				EdgeText "Next Remapped"
+				SpeakerState "None"
+				NodeData ""
+				VoiceSoundWave ""
+				VoiceDialogueWave ""
+				GenericData ""
+			}
+			{
+				Speaker "None"
+				Text ""
+				EdgeText "fdsdfsfds"
+				SpeakerState "None"
+				NodeData ""
+				VoiceSoundWave ""
+				VoiceDialogueWave ""
+				GenericData ""
+			}
+			{
+				Speaker "None"
+				Text "test sequence 3"
+				EdgeText "test sequence edge 3"
+				SpeakerState "None"
+				NodeData ""
+				VoiceSoundWave ""
+				VoiceDialogueWave ""
+				GenericData ""
+			}
+			{
+				Speaker "None"
+				Text ""
+				EdgeText "Next Remapped"
+				SpeakerState "None"
+				NodeData ""
+				VoiceSoundWave ""
+				VoiceDialogueWave ""
+				GenericData ""
+			}
+		}
+		InnerEdges
+		{
+			{  TargetIndex -1 SpeakerState "None" bIncludeInAllOptionListIfUnsatisfied True Text "test sequence edge 1" }
+			{  TargetIndex -1 SpeakerState "None" bIncludeInAllOptionListIfUnsatisfied True Text "Next" }
+			{  TargetIndex -1 SpeakerState "None" bIncludeInAllOptionListIfUnsatisfied True Text "fdsdfsfds" }
+			{  TargetIndex -1 SpeakerState "None" bIncludeInAllOptionListIfUnsatisfied True Text "test sequence edge 3" }
+			{  TargetIndex -1 SpeakerState "None" bIncludeInAllOptionListIfUnsatisfied True Text "Next" }
+		}
 	}
 }

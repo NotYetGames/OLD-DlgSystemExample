@@ -11,5 +11,9 @@ public class DlgExampleEditorTarget : TargetRules
 		ExtraModuleNames.Add("DlgExample");
 
 		bLegacyPublicIncludePaths = false;
+
+		bUndefinedIdentifierErrors = true;
+        bShadowVariableErrors = true;
+		WindowsPlatform.bStrictConformanceMode = true;
 	}
 }

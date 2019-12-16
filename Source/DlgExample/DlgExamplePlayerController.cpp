@@ -9,6 +9,7 @@
 #include "DlgManager.h"
 
 #include "DlgExampleCharacter.h"
+#include "Logging/DlgLogger.h"
 
 ADlgExamplePlayerController::ADlgExamplePlayerController()
 {
@@ -120,6 +121,11 @@ void ADlgExamplePlayerController::OnSetDestinationPressed()
 {
 	// set flag to keep updating destination until released
 	bMoveToMouseCursor = true;
+
+	// auto logger = FDlgLogger::New();
+	// logger
+	// 	.SetClientConsolePlayerController(this)
+	// 	.Warningf(TEXT("HitResultTraceDistance = %f"), HitResultTraceDistance);
 }
 
 void ADlgExamplePlayerController::OnSetDestinationReleased()
