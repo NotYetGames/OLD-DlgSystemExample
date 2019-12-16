@@ -8,6 +8,7 @@ public class DlgExampleEditorTarget : TargetRules
 	public DlgExampleEditorTarget(TargetInfo Target) : base(Target)
 	{
 		Type = TargetType.Editor;
+		DefaultBuildSettings = BuildSettingsVersion.V2;
 		ExtraModuleNames.Add("DlgExample");
 
 		bLegacyPublicIncludePaths = false;

@@ -8,6 +8,7 @@ public class DlgExampleTarget : TargetRules
 	public DlgExampleTarget(TargetInfo Target) : base(Target)
 	{
 		Type = TargetType.Game;
+		DefaultBuildSettings = BuildSettingsVersion.V2;
 		ExtraModuleNames.Add("DlgExample");
 
 		bLegacyPublicIncludePaths = false;
