@@ -1,4 +1,4 @@
-// Copyright 2017-2018 Csaba Molnar, Daniel Butum
+// Copyright Csaba Molnar, Daniel Butum. All Rights Reserved.
 #pragma once
 
 #include "Templates/SubclassOf.h"
@@ -26,7 +26,7 @@ struct DLGSYSTEM_API FDlgDialogueObjectVersion
 		AddComparisonWithOtherParticipant,
 		AddTextFormatArguments,
 		AddLocalizationOverwrittenNamespacesAndKeys,
-		
+
 
 		// -----<new versions can be added above this line>-------------------------------------------------
 		VersionPlusOne,
@@ -101,17 +101,6 @@ public:
 	void PostRename(UObject* OldOuter, const FName OldName) override;
 
 	/**
-	 * Note that the object will be modified.  If we are currently recording into the
-	 * transaction buffer (undo/redo), save a copy of this object into the buffer and
-	 * marks the package as needing to be saved.
-	 *
-	 * @param	bAlwaysMarkDirty	if true, marks the package dirty even if we aren't
-	 *								currently recording an active undo/redo transaction
-	 * @return true if the object was saved to the transaction buffer
-	 */
-	bool Modify(bool bAlwaysMarkDirty = true) override;
-
-	/**
 	 * Called after duplication & serialization and before PostLoad. Used to e.g. make sure UStaticMesh's UModel gets copied as well.
 	 * Note: NOT called on components on actor duplication (alt-drag or copy-paste).  Use PostEditImport as well to cover that case.
 	 */
@@ -126,15 +115,15 @@ public:
 
 #if WITH_EDITOR
 	/**
-	 * Called by the editor to query whether a property of this object is allowed to be modified.
-	 * The property editor uses this to disable controls for properties that should not be changed.
-	 * When overriding this function you should always call the parent implementation first.
+	 * Note that the object will be modified.  If we are currently recording into the
+	 * transaction buffer (undo/redo), save a copy of this object into the buffer and
+	 * marks the package as needing to be saved.
 	 *
-	 * @param	InProperty	The property to query
-	 *
-	 * @return	true if the property can be modified in the editor, otherwise false
+	 * @param	bAlwaysMarkDirty	if true, marks the package dirty even if we aren't
+	 *								currently recording an active undo/redo transaction
+	 * @return true if the object was saved to the transaction buffer
 	 */
-	bool CanEditChange(const UProperty* InProperty) const override;
+	bool Modify(bool bAlwaysMarkDirty = true) override;
 
 	/**
 	 * Called when a property on this object has been modified externally
@@ -145,7 +134,7 @@ public:
 
 	/**
 	 * This alternate version of PostEditChange is called when properties inside structs are modified.  The property that was actually modified
-	 * is located at the tail of the list.  The head of the list of the UStructProperty member variable that contains the property that was modified.
+	 * is located at the tail of the list.  The head of the list of the FNYStructProperty member variable that contains the property that was modified.
 	 */
 	void PostEditChangeChainProperty(struct FPropertyChangedChainEvent& PropertyChangedEvent) override;
 
@@ -431,7 +420,7 @@ public:
 
 	// Is the Node at NodeIndex (if it exists) an end node?
 	bool IsEndNode(int32 NodeIndex) const;
-	
+
 	/** Check if a text file in the same folder with the same name (DlgName) exists and loads the data from that file. */
 	void ImportFromFile();
 
@@ -485,13 +474,13 @@ public:
 private:
 	// Adds conditions from the edges of this Node.
 	void AddConditionsDataFromNodeEdges(const UDlgNode* Node, int32 NodeIndex);
-	
+
 	// Gets the map entry - creates it first if it is not yet there
 	FDlgParticipantData& GetParticipantDataEntry(FName ParticipantName, FName FallbackNodeOwnerName, bool bCheckNone, const FString& ContextMessage);
 
 	// Rebuild & Update and node and its edges
 	void RebuildAndUpdateNode(UDlgNode* Node, const UDlgSystemSettings* Settings, bool bUpdateTextsNamespacesAndKeys);
-	
+
 	void ImportFromFileFormat(EDlgDialogueTextFormat TextFormat);
 	void ExportToFileFormat(EDlgDialogueTextFormat TextFormat) const;
 
@@ -503,7 +492,7 @@ private:
 	 */
 	void AutoFixGraph();
 
-private:
+protected:
 	/** Used to keep track of the version in text  file too, besides being written in the .uasset file. */
 	UPROPERTY()
 	int32 DlgVersion = FDlgDialogueObjectVersion::LatestVersion;
@@ -540,7 +529,7 @@ private:
 	 * to other nodes in this array.
 	 * NOTE: Add VisibleAnywhere to make it easier to debug
 	 */
-	UPROPERTY(AdvancedDisplay, EditFixedSize, Instanced, Meta = (DlgWriteIndex))
+	UPROPERTY(AdvancedDisplay, EditFixedSize, BlueprintReadOnly, Instanced, Category = DialogueData, Meta = (DlgWriteIndex))
 	TArray<UDlgNode*> Nodes;
 
 	// Useful for syncing on the first run with the text file.

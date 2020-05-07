@@ -1,4 +1,4 @@
-// Copyright 2017-2018 Csaba Molnar, Daniel Butum
+// Copyright Csaba Molnar, Daniel Butum. All Rights Reserved.
 #pragma once
 
 #include "Nodes/DlgNode.h"
@@ -6,6 +6,7 @@
 #include "DlgNode_SpeechSequence.generated.h"
 
 class USoundWave;
+class USoundBase;
 class UDialogueWave;
 
 USTRUCT(BlueprintType, Blueprintable)
@@ -30,7 +31,7 @@ public:
 	/** State of the speaker attached to the entry. Passed to the GetParticipantIcon function. */
 	UPROPERTY(EditAnywhere, Category = DialogueNodeData)
 	FName SpeakerState;
-	
+
 	/** Node data that you can customize yourself with your own data types */
 	UPROPERTY(EditAnywhere, Instanced, Category = DialogueNodeData)
 	UDlgNodeData* NodeData;
@@ -38,7 +39,7 @@ public:
 	// Voice attached to this node. The Sound Wave variant.
 	// NOTE: You should probably use the NodeData
 	UPROPERTY(EditAnywhere, Category = DialogueNodeData, Meta = (DlgSaveOnlyReference))
-	USoundWave* VoiceSoundWave = nullptr;
+	USoundBase* VoiceSoundWave = nullptr;
 
 	// Voice attached to this node. The Dialogue Wave variant. Only the first wave from the dialogue context array should be used.
 	// NOTE: You should probably use the NodeData
@@ -75,21 +76,21 @@ public:
 	// Begin UDlgNode interface
 	void UpdateTextsValuesFromDefaultsAndRemappings(const UDlgSystemSettings* Settings, bool bEdges, bool bUpdateGraphNode = true) override;
 	void UpdateTextsNamespacesAndKeys(const UDlgSystemSettings* Settings, bool bEdges, bool bUpdateGraphNode = true) override;
-	bool HandleNodeEnter(UDlgContextInternal* DlgContext, TSet<const UDlgNode*> NodesEnteredWithThisStep) override;
-	bool ReevaluateChildren(UDlgContextInternal* DlgContext, TSet<const UDlgNode*> AlreadyEvaluated) override;
-	bool OptionSelected(int32 OptionIndex, UDlgContextInternal* DlgContext) override;
+	bool HandleNodeEnter(UDlgContext* Context, TSet<const UDlgNode*> NodesEnteredWithThisStep) override;
+	bool ReevaluateChildren(UDlgContext* Context, TSet<const UDlgNode*> AlreadyEvaluated) override;
+	bool OptionSelected(int32 OptionIndex, UDlgContext* Context) override;
 
 	// Getters
 	const FText& GetNodeText() const override;
 	UDlgNodeData* GetNodeData() const override;
-	USoundWave* GetNodeVoiceSoundWave() const override;
+	USoundBase* GetNodeVoiceSoundBase() const override;
 	UDialogueWave* GetNodeVoiceDialogueWave() const override;
 	FName GetSpeakerState() const override;
 	void AddAllSpeakerStatesIntoSet(TSet<FName>& OutStates) const override;
 	UObject* GetGenericData() const override;
 	FName GetNodeParticipantName() const override;
 	void GetAssociatedParticipants(TArray<FName>& OutArray) const override;
-	
+
 #if WITH_EDITOR
 	FString GetNodeTypeString() const override { return TEXT("Speech Sequence"); }
 #endif

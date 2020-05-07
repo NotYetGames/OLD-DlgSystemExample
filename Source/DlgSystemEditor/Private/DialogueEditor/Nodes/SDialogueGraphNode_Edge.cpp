@@ -1,4 +1,4 @@
-// Copyright 2017-2018 Csaba Molnar, Daniel Butum
+// Copyright Csaba Molnar, Daniel Butum. All Rights Reserved.
 #include "SDialogueGraphNode_Edge.h"
 
 #include "IDocumentation.h"
@@ -148,30 +148,42 @@ void SDialogueGraphNode_Edge::UpdateGraphNode()
 		[
 			SNew(SOverlay)
 
-			+SOverlay::Slot()
-			[
-				SNew(SImage)
-				.Image(FEditorStyle::GetBrush("Graph.TransitionNode.Body"))
-			]
-
+#if ENGINE_MINOR_VERSION >= 24
+			// >= 4.24
 			+SOverlay::Slot()
 			[
 				SNew(SImage)
 				.Image(FEditorStyle::GetBrush("Graph.TransitionNode.ColorSpill"))
 				.ColorAndOpacity(this, &Self::GetTransitionColor)
 			]
-
 			+SOverlay::Slot()
 			[
 				SNew(SImage)
 				.Image(FEditorStyle::GetBrush("Graph.TransitionNode.Icon"))
 			]
-
+#else
+			+SOverlay::Slot()
+			[
+				SNew(SImage)
+				.Image(FEditorStyle::GetBrush("Graph.TransitionNode.Body"))
+			]
+			+SOverlay::Slot()
+			[
+				SNew(SImage)
+				.Image(FEditorStyle::GetBrush("Graph.TransitionNode.ColorSpill"))
+				.ColorAndOpacity(this, &Self::GetTransitionColor)
+			]
+			+SOverlay::Slot()
+			[
+				SNew(SImage)
+				.Image(FEditorStyle::GetBrush("Graph.TransitionNode.Icon"))
+			]
 			+SOverlay::Slot()
 			[
 				SNew(SImage)
 				.Image(FEditorStyle::GetBrush("Graph.TransitionNode.Gloss"))
 			]
+#endif // ENGINE_MINOR_VERSION >= 24
 		];
 }
 //  End SGraphNode Interface

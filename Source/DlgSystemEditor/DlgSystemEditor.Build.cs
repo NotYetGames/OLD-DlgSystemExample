@@ -1,4 +1,4 @@
-// Copyright 2017-2018 Csaba Molnar, Daniel Butum
+// Copyright Csaba Molnar, Daniel Butum. All Rights Reserved.
 
 using UnrealBuildTool;
 using System.IO;
@@ -13,7 +13,8 @@ public class DlgSystemEditor : ModuleRules
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
 		bEnforceIWYU = true;
 		//MinFilesUsingPrecompiledHeaderOverride = 1;
-		//bFasterWithoutUnity = true;
+		// bFasterWithoutUnity = true;
+		// bUseUnity = false;
 		//PrivatePCHHeaderFile = "Private/DlgSystemEditorPrivatePCH.h";
 
 		//if ((Target.Platform == UnrealTargetPlatform.Win32 || Target.Platform == UnrealTargetPlatform.Win64)
@@ -83,6 +84,10 @@ public class DlgSystemEditor : ModuleRules
 				// e.g. FPlatformApplicationMisc::ClipboardCopy
 				"ApplicationCore",
 			});
+
+#if UE_4_24_OR_LATER
+		PrivateDependencyModuleNames.Add("ToolMenus");
+#endif
 
 		PrivateIncludePathModuleNames.AddRange(
 			new string[] {
