@@ -39,7 +39,8 @@ void ADlgExampleGameMode::StartPlay()
 	PrimaryActorTick.bCanEverTick = true;
 
 	// Register plugin console commands
-	UDlgManager::RegisterDialogueModuleConsoleCommands(this);
+	// UDlgManager::SetPersistentWorldContextObject(this);
+	// UDlgManager::RegisterDialogueConsoleCommands();
 
 	// register own commands probably
 }
@@ -51,5 +52,5 @@ void ADlgExampleGameMode::EndPlay(const EEndPlayReason::Type EndPlayReason)
 	//
 
 	// Unregister all the console commands
-	UDlgManager::UnRegisterDialogueModuleConsoleCommands();
+	// UDlgManager::UnregisterDialogueConsoleCommands();
 }
