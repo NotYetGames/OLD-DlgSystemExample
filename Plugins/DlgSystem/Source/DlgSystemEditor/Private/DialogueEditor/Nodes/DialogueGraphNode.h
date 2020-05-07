@@ -1,4 +1,4 @@
-// Copyright 2017-2018 Csaba Molnar, Daniel Butum
+// Copyright Csaba Molnar, Daniel Butum. All Rights Reserved.
 #pragma once
 
 #include "CoreTypes.h"
@@ -84,7 +84,7 @@ public:
 
 	/**
 	 * This alternate version of PostEditChange is called when properties inside structs are modified.  The property that was actually modified
-	 * is located at the tail of the list.  The head of the list of the UStructProperty member variable that contains the property that was modified.
+	 * is located at the tail of the list.  The head of the list of the FNYStructProperty member variable that contains the property that was modified.
 	 */
 	void PostEditChangeChainProperty(struct FPropertyChangedChainEvent& PropertyChangedEvent) override;
 
@@ -138,7 +138,7 @@ public:
 #else
 	void GetContextMenuActions(const FGraphNodeContextMenuBuilder& Context) const override;
 #endif
-	
+
 	/**
 	 * Autowire a newly created node.
 	 *
@@ -228,13 +228,13 @@ public:
 	/** Does this node has any enter conditions? */
 	bool HasEnterConditions() const
 	{
-		return DialogueNode ? DialogueNode->GetNodeEnterConditions().Num() > 0 : false;
+		return DialogueNode ? DialogueNode->HasAnyEnterConditions() : false;
 	}
 
 	/** Does this node has any enter events? */
 	bool HasEnterEvents() const
 	{
-		return DialogueNode ? DialogueNode->GetNodeEnterEvents().Num() > 0 : false;
+		return DialogueNode ? DialogueNode->HasAnyEnterEvents() : false;
 	}
 
 	/** Does this node has any voice properties set? */

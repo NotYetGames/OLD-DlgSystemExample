@@ -1,4 +1,4 @@
-// Copyright 2017-2018 Csaba Molnar, Daniel Butum
+// Copyright Csaba Molnar, Daniel Butum. All Rights Reserved.
 #pragma once
 
 #include "Nodes/DlgNode.h"
@@ -39,13 +39,13 @@ public:
 #endif
 
 	// Begin UDlgNode Interface.
-	bool HandleNodeEnter(UDlgContextInternal* DlgContext, TSet<const UDlgNode*> NodesEnteredWithThisStep) override;
-	bool ReevaluateChildren(UDlgContextInternal* DlgContext, TSet<const UDlgNode*> AlreadyEvaluated) override;
+	bool HandleNodeEnter(UDlgContext* Context, TSet<const UDlgNode*> NodesEnteredWithThisStep) override;
+	bool ReevaluateChildren(UDlgContext* Context, TSet<const UDlgNode*> AlreadyEvaluated) override;
 	void GetAssociatedParticipants(TArray<FName>& OutArray) const override;
 
 	void UpdateTextsValuesFromDefaultsAndRemappings(const UDlgSystemSettings* Settings, bool bEdges, bool bUpdateGraphNode = true) override;
 	void UpdateTextsNamespacesAndKeys(const UDlgSystemSettings* Settings, bool bEdges, bool bUpdateGraphNode = true) override;
-	void RebuildConstructedText(const UDlgContextInternal* DlgContext) override;
+	void RebuildConstructedText(const UDlgContext* Context) override;
 	void RebuildTextArguments(bool bEdges, bool bUpdateGraphNode = true) override
 	{
 		Super::RebuildTextArguments(bEdges, bUpdateGraphNode);
@@ -68,7 +68,7 @@ public:
 
 	/** stuff we have to keep for legacy reason (but would make more sense to remove them from the plugin as they could be created in NodeData): */
 	FName GetSpeakerState() const override { return SpeakerState; }
-	USoundWave* GetNodeVoiceSoundWave() const override { return VoiceSoundWave; }
+	USoundBase* GetNodeVoiceSoundBase() const override { return VoiceSoundWave; }
 	UDialogueWave* GetNodeVoiceDialogueWave() const override { return VoiceDialogueWave; }
 	UObject* GetGenericData() const override { return GenericData; }
 
@@ -94,7 +94,7 @@ public:
 
 	void SetNodeData(UDlgNodeData* InNodeData) { NodeData = InNodeData; }
 	void SetSpeakerState(FName InSpeakerState) { SpeakerState = InSpeakerState; }
-	void SetVoiceSoundWave(USoundWave* InVoiceSoundWave) { VoiceSoundWave = InVoiceSoundWave; }
+	void SetVoiceSoundBase(USoundBase* InVoiceSoundBase) { VoiceSoundWave = InVoiceSoundBase; }
 	void SetVoiceDialogueWave(UDialogueWave* InVoiceDialogueWave) { VoiceDialogueWave = InVoiceDialogueWave; }
 	void SetGenericData(UObject* InGenericData) { GenericData = InGenericData; }
 
@@ -116,7 +116,7 @@ protected:
 	 */
 	UPROPERTY(EditAnywhere, Category = DialogueNodeData)
 	bool bIsVirtualParent = false;
-	
+
 	/** Text that will appear when this node participant name speaks to someone else. */
 	UPROPERTY(EditAnywhere, Category = DialogueNodeData, Meta = (MultiLine = true))
 	FText Text;
@@ -136,7 +136,7 @@ protected:
 	// Voice attached to this node. The Sound Wave variant.
 	// NOTE: You should probably use the NodeData
 	UPROPERTY(EditAnywhere, Category = DialogueNodeData, Meta = (DlgSaveOnlyReference))
-	USoundWave* VoiceSoundWave;
+	USoundBase* VoiceSoundWave;
 
 	// Voice attached to this node. The Dialogue Wave variant. Only the first wave from the dialogue context array should be used.
 	// NOTE: You should probably use the NodeData

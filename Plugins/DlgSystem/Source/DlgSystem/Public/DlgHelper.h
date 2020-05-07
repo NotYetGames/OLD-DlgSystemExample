@@ -1,4 +1,4 @@
-// Copyright 2017-2018 Csaba Molnar, Daniel Butum
+// Copyright Csaba Molnar, Daniel Butum. All Rights Reserved.
 #pragma once
 
 #include "CoreMinimal.h"
@@ -6,6 +6,8 @@
 #include "UObject/Object.h"
 #include "UObject/UnrealType.h"
 #include <functional>
+
+#include "NYReflectionTypes.h"
 
 
 class UDlgSystemSettings;
@@ -16,7 +18,7 @@ class FDlgConstScriptArrayHelper : public FScriptArrayHelper
 	typedef FScriptArrayHelper Super;
 	typedef FDlgConstScriptArrayHelper Self;
 public:
-	FORCEINLINE FDlgConstScriptArrayHelper(const UArrayProperty* InProperty, const void *InArray)
+	FORCEINLINE FDlgConstScriptArrayHelper(const FNYArrayProperty* InProperty, const void *InArray)
 		: Super(InProperty, InArray) {}
 
 	FORCEINLINE const uint8* GetConstRawPtr(int32 Index = 0) const
@@ -33,7 +35,7 @@ class FDlgConstScriptMapHelper : public FScriptMapHelper
 	typedef FDlgConstScriptMapHelper Self;
 public:
 
-	FORCEINLINE FDlgConstScriptMapHelper(const UMapProperty* InProperty, const void* InMap)
+	FORCEINLINE FDlgConstScriptMapHelper(const FNYMapProperty* InProperty, const void* InMap)
 		: Super(InProperty, InMap) {}
 
 
@@ -209,8 +211,19 @@ public:
 	// FileSystem
 	static bool DeleteFile(const FString& PathName, bool bVerbose = true);
 	static bool RenameFile(const FString& OldPathName, const FString& NewPathName, bool bOverWrite = false, bool bVerbose = true);
-	
-	
+
+	// Gets the first element from a set. From https://answers.unrealengine.com/questions/332443/how-to-get-the-firstonly-element-in-tset.html
+	template <typename SetType>
+	static typename TCopyQualifiersFromTo<SetType, typename SetType::ElementType>::Type* GetFirstSetElement(SetType& Set)
+	{
+		for (auto& Element : Set)
+		{
+			return &Element;
+		}
+
+		return nullptr;
+	}
+
 	// Is FirstSet == SecondSet
 	// NOTE for SetType = float this won't work, what are you even doing?
 	template <typename SetType>

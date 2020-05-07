@@ -1,4 +1,4 @@
-// Copyright 2017-2019 Csaba Molnar, Daniel Butum
+// Copyright Csaba Molnar, Daniel Butum. All Rights Reserved.
 #pragma once
 
 #include "CoreMinimal.h"
@@ -44,7 +44,6 @@ struct FNYMessageLogInitializationOptions
 	/** Whether to show this log in the main log window */
 	bool bShowInLogWindow = true;
 };
-
 
 
 UENUM()

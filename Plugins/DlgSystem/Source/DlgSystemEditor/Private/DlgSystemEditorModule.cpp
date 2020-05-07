@@ -1,4 +1,4 @@
-// Copyright 2017-2018 Csaba Molnar, Daniel Butum
+// Copyright Csaba Molnar, Daniel Butum. All Rights Reserved.
 #include "DlgSystemEditorModule.h"
 
 #include "Extensions/ContentBrowserExtensions.h"
@@ -53,9 +53,20 @@ FDlgSystemEditorModule::FDlgSystemEditorModule() : DlgSystemAssetCategoryBit(EAs
 
 void FDlgSystemEditorModule::StartupModule()
 {
+#if ENGINE_MINOR_VERSION >= 24
+	// Fix blueprint Nativization https://gitlab.com/NotYetGames/DlgSystem/-/issues/28
+	const FString LongName = FPackageName::ConvertToLongScriptPackageName(TEXT("DlgSystemEditor"));
+	if (UPackage* Package = Cast<UPackage>(StaticFindObjectFast(UPackage::StaticClass(), nullptr, *LongName, false, false)))
+	{
+		Package->SetPackageFlags(PKG_EditorOnly);
+	}
+#endif
+
 	UE_LOG(LogDlgSystemEditor, Log, TEXT("DlgSystemEditorModule: StartupModule"));
 	OnPostEngineInitHandle = FCoreDelegates::OnPostEngineInit.AddRaw(this, &Self::HandleOnPostEngineInit);
 	OnBeginPIEHandle = FEditorDelegates::BeginPIE.AddRaw(this, &Self::HandleOnBeginPIE);
+	OnPostPIEStartedHandle = FEditorDelegates::PostPIEStarted.AddRaw(this, &Self::HandleOnPostPIEStarted);
+	OnEndPIEHandle = FEditorDelegates::EndPIE.AddRaw(this, &Self::HandleOnEndPIEHandle);
 
 	// Register slate style overrides
 	FDialogueStyle::Initialize();
@@ -131,8 +142,14 @@ void FDlgSystemEditorModule::StartupModule()
 
 	// Bind Editor commands
 	FileMenuEditorCommands = MakeShared<FUICommandList>();
-	FileMenuEditorCommands->MapAction(FDialogueEditorCommands::Get().SaveAllDialogues, FExecuteAction::CreateStatic(&Self::HandleOnSaveAllDialogues));
-	FileMenuEditorCommands->MapAction(FDialogueEditorCommands::Get().DeleteAllDialoguesTextFiles, FExecuteAction::CreateStatic(&Self::HandleOnDeleteAllDialoguesTextFiles));
+	FileMenuEditorCommands->MapAction(
+		FDialogueEditorCommands::Get().SaveAllDialogues,
+		FExecuteAction::CreateStatic(&Self::HandleOnSaveAllDialogues)
+	);
+	FileMenuEditorCommands->MapAction(
+		FDialogueEditorCommands::Get().DeleteAllDialoguesTextFiles,
+		FExecuteAction::CreateStatic(&Self::HandleOnDeleteAllDialoguesTextFiles)
+	);
 
 	// Content Browser extension
 	FDlgContentBrowserExtensions::InstallHooks();
@@ -205,6 +222,14 @@ void FDlgSystemEditorModule::ShutdownModule()
 	{
 		FEditorDelegates::BeginPIE.Remove(OnBeginPIEHandle);
 	}
+	if (OnPostPIEStartedHandle.IsValid())
+	{
+		FEditorDelegates::PostPIEStarted.Remove(OnPostPIEStartedHandle);
+	}
+	if (OnEndPIEHandle.IsValid())
+	{
+		FEditorDelegates::EndPIE.Remove(OnEndPIEHandle);
+	}
 
 	UE_LOG(LogDlgSystemEditor, Log, TEXT("DlgSystemEditorModule: ShutdownModule"));
 }
@@ -236,7 +261,8 @@ void FDlgSystemEditorModule::HandleOnSaveAllDialogues()
 {
 	const EAppReturnType::Type Response = FPlatformMisc::MessageBoxExt(EAppMsgType::YesNo,
 		TEXT("Save all Dialogue assets/files? This will save both the .uasset and the text files depending on the TextFormat from the Dialogue Settings."),
-		TEXT("Save Dialogues?"));
+		TEXT("Save Dialogues?")
+	);
 	if (Response == EAppReturnType::No)
 	{
 		return;
@@ -311,9 +337,13 @@ void FDlgSystemEditorModule::HandleOnPostEngineInit()
 	// - the universe hates us? +_+
 	for (UDlgDialogue* Dialogue : UDlgManager::GetDialoguesWithDuplicateGuid())
 	{
-		UE_LOG(LogDlgSystemEditor, Warning, TEXT("Dialogue = `%s`, GUID = `%s` has a Duplicate GUID. Regenerating."),
-			*Dialogue->GetPathName(), *Dialogue->GetDlgGuid().ToString())
-			Dialogue->RegenerateGuid();
+		UE_LOG(
+			LogDlgSystemEditor,
+			Warning,
+			TEXT("Dialogue = `%s`, GUID = `%s` has a Duplicate GUID. Regenerating."),
+			*Dialogue->GetPathName(), *Dialogue->GetDlgGuid().ToString()
+		)
+		Dialogue->RegenerateGuid();
 		Dialogue->MarkPackageDirty();
 	}
 
@@ -323,12 +353,19 @@ void FDlgSystemEditorModule::HandleOnPostEngineInit()
 	{
 		// GUID already exists (╯°□°）╯︵ ┻━┻
 		// Does this break the universe?
-		UE_LOG(LogDlgSystemEditor, Error, TEXT("Dialogue = `%s`, GUID = `%s`"),
-			*Dialogue->GetPathName(), *Dialogue->GetDlgGuid().ToString())
-			UE_LOG(LogDlgSystemEditor,
-				Fatal,
-				TEXT("(╯°□°）╯︵ ┻━┻ Congrats, you just broke the universe, are you even human? Now please go and proove an NP complete problem."
-					"The chance of generating two equal random FGuid (picking 4, uint32 numbers) is p = 9.3132257 * 10^(-10) % (or something like this)"))
+		UE_LOG(
+			LogDlgSystemEditor,
+			Error,
+			TEXT("Dialogue = `%s`, GUID = `%s`"),
+			*Dialogue->GetPathName(), *Dialogue->GetDlgGuid().ToString()
+		)
+
+		UE_LOG(
+			LogDlgSystemEditor,
+			Fatal,
+			TEXT("(╯°□°）╯︵ ┻━┻ Congrats, you just broke the universe, are you even human? Now please go and proove an NP complete problem."
+				"The chance of generating two equal random FGuid (picking 4, uint32 numbers) is p = 9.3132257 * 10^(-10) % (or something like this)")
+		)
 	}
 }
 
@@ -338,13 +375,51 @@ void FDlgSystemEditorModule::HandleOnBeginPIE(bool bIsSimulating)
 	{
 		return;
 	}
-	if (!GetDefault<UDlgSystemSettings>()->bClearDialogueHistoryAutomatically)
+}
+
+void FDlgSystemEditorModule::HandleOnPostPIEStarted(bool bIsSimulating)
+{
+	if (!OnPostPIEStartedHandle.IsValid())
 	{
 		return;
 	}
 
-	UE_LOG(LogDlgSystemEditor, Verbose, TEXT("BeginPIE: Clearing Dialogue History"));
-	UDlgManager::ClearDialogueHistory();
+	const UDlgSystemSettings* Settings = GetDefault<UDlgSystemSettings>();
+	if (!Settings)
+	{
+		return;
+	}
+
+	if (Settings->bClearDialogueHistoryAutomatically)
+	{
+		FDlgLogger::Get().Debugf(TEXT("BeginPIE(bIsSimulating = %d). Clearing Dialogue History"), bIsSimulating);
+		UDlgManager::ClearDialogueHistory();
+	}
+
+	if (Settings->bRegisterDialogueConsoleCommandsAutomatically)
+	{
+		FDlgLogger::Get().Debugf(TEXT("BeginPIE(bIsSimulating = %d). Registering Console commands"), bIsSimulating);
+		UDlgManager::RegisterDialogueConsoleCommands();
+	}
+}
+
+void FDlgSystemEditorModule::HandleOnEndPIEHandle(bool bIsSimulating)
+{
+	if (!OnEndPIEHandle.IsValid())
+	{
+		return;
+	}
+	const UDlgSystemSettings* Settings = GetDefault<UDlgSystemSettings>();
+	if (!Settings)
+	{
+		return;
+	}
+
+	if (Settings->bRegisterDialogueConsoleCommandsAutomatically)
+	{
+		FDlgLogger::Get().Debugf(TEXT("EndPIE(bIsSimulating = %d). Unregistering Console commands"), bIsSimulating);
+		UDlgManager::UnregisterDialogueConsoleCommands();
+	}
 }
 
 void FDlgSystemEditorModule::ExtendMenu()
