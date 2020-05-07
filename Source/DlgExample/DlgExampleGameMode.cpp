@@ -30,7 +30,8 @@ void ADlgExampleGameMode::StartPlay()
 	//
 	// C++ version, can be overriden in BP
 	//
-
+	// UDlgManager::SetPersistentWorldContextObject(this);
+	
 	// We must clear the Dialogue memory here because the FDlgMemory is a singleton and it remains in memory. Causes
 	// problems in PIE and play in editor.
 	UDlgManager::ClearDialogueHistory();
@@ -39,7 +40,7 @@ void ADlgExampleGameMode::StartPlay()
 	PrimaryActorTick.bCanEverTick = true;
 
 	// Register plugin console commands
-	UDlgManager::RegisterDialogueModuleConsoleCommands(this);
+	// UDlgManager::RegisterDialogueConsoleCommands();
 
 	// register own commands probably
 }
@@ -51,5 +52,5 @@ void ADlgExampleGameMode::EndPlay(const EEndPlayReason::Type EndPlayReason)
 	//
 
 	// Unregister all the console commands
-	UDlgManager::UnRegisterDialogueModuleConsoleCommands();
+	// UDlgManager::UnRegisterDialogueConsoleCommands();
 }

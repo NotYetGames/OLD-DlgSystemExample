@@ -89,7 +89,7 @@ void ADlgExampleCharacter::Tick(float DeltaSeconds)
 }
 
 
-bool ADlgExampleCharacter::ModifyIntValue_Implementation(const FName& ValueName, bool bDelta, int32 Value)
+bool ADlgExampleCharacter::ModifyIntValue_Implementation(FName ValueName, bool bDelta, int32 Value)
 {
 	if (!DlgData.Integers.Contains(ValueName))
 		DlgData.Integers.Add(ValueName, 0);
@@ -102,7 +102,7 @@ bool ADlgExampleCharacter::ModifyIntValue_Implementation(const FName& ValueName,
 	return true;
 }
 
-bool ADlgExampleCharacter::ModifyFloatValue_Implementation(const FName& ValueName, bool bDelta, float Value)
+bool ADlgExampleCharacter::ModifyFloatValue_Implementation(FName ValueName, bool bDelta, float Value)
 {
 	if (!DlgData.Floats.Contains(ValueName))
 		DlgData.Floats.Add(ValueName, 0.0f);
@@ -115,7 +115,7 @@ bool ADlgExampleCharacter::ModifyFloatValue_Implementation(const FName& ValueNam
 	return true;
 }
 
-bool ADlgExampleCharacter::ModifyBoolValue_Implementation(const FName& ValueName, bool bValue)
+bool ADlgExampleCharacter::ModifyBoolValue_Implementation(FName ValueName, bool bValue)
 {
 	if (bValue)
 		DlgData.TrueBools.Add(ValueName);
@@ -125,7 +125,7 @@ bool ADlgExampleCharacter::ModifyBoolValue_Implementation(const FName& ValueName
 	return true;
 }
 
-bool ADlgExampleCharacter::ModifyNameValue_Implementation(const FName& ValueName, const FName& NameValue)
+bool ADlgExampleCharacter::ModifyNameValue_Implementation(FName ValueName, FName NameValue)
 {
 	if (DlgData.Names.Contains(ValueName))
 		DlgData.Names[ValueName] = NameValue;
@@ -136,22 +136,22 @@ bool ADlgExampleCharacter::ModifyNameValue_Implementation(const FName& ValueName
 }
 
 
-float ADlgExampleCharacter::GetFloatValue_Implementation(const FName& ValueName) const
+float ADlgExampleCharacter::GetFloatValue_Implementation(FName ValueName) const
 {
 	return DlgData.Floats.Contains(ValueName) ? DlgData.Floats[ValueName] : 0.0f;
 }
 
-int32 ADlgExampleCharacter::GetIntValue_Implementation(const FName& ValueName) const
+int32 ADlgExampleCharacter::GetIntValue_Implementation(FName ValueName) const
 {
 	return DlgData.Integers.Contains(ValueName) ? DlgData.Integers[ValueName] : 0;
 }
 
-bool ADlgExampleCharacter::GetBoolValue_Implementation(const FName& ValueName) const
+bool ADlgExampleCharacter::GetBoolValue_Implementation(FName ValueName) const
 {
 	return DlgData.TrueBools.Contains(ValueName);
 }
 
-FName ADlgExampleCharacter::GetNameValue_Implementation(const FName& ValueName) const
+FName ADlgExampleCharacter::GetNameValue_Implementation(FName ValueName) const
 {
 	return DlgData.Names.Contains(ValueName) ? DlgData.Names[ValueName] : NAME_None;
 }
