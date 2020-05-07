@@ -1,4 +1,4 @@
-// Copyright 2017-2018 Csaba Molnar, Daniel Butum
+// Copyright Csaba Molnar, Daniel Butum. All Rights Reserved.
 #include "DlgEdge.h"
 #include "DlgSystemPrivatePCH.h"
 #include "DlgContextInternal.h"
@@ -33,8 +33,8 @@ bool FDlgEdge::IsTextVisible(const UDlgNode* ParentNode)
 			return false;
 		}
 	}
-	
-	return true; 
+
+	return true;
 }
 
 void FDlgEdge::UpdateTextValueFromDefaultAndRemapping(
@@ -52,7 +52,7 @@ void FDlgEdge::UpdateTextValueFromDefaultAndRemapping(
 		SetText(FText::GetEmpty());
 		return;
 	}
-	
+
 	if (Settings->bSetDefaultEdgeTexts)
 	{
 		// Only if empty
@@ -84,11 +84,11 @@ void FDlgEdge::UpdateTextsNamespacesAndKeys(const UObject* ParentObject, const U
 	{
 		return;
 	}
-	
+
 	FDlgLocalizationHelper::UpdateTextNamespaceAndKey(ParentObject, Settings, Text);
 }
 
-bool FDlgEdge::Evaluate(const UDlgContextInternal* DlgContext, TSet<const UDlgNode*> AlreadyVisitedNodes) const
+bool FDlgEdge::Evaluate(const UDlgContext* Context, TSet<const UDlgNode*> AlreadyVisitedNodes) const
 {
 	if (!IsValid())
 	{
@@ -96,26 +96,26 @@ bool FDlgEdge::Evaluate(const UDlgContextInternal* DlgContext, TSet<const UDlgNo
 	}
 
 	// Check target node enter conditions
-	if (!DlgContext->IsNodeEnterable(TargetIndex, AlreadyVisitedNodes))
+	if (!Context->IsNodeEnterable(TargetIndex, AlreadyVisitedNodes))
 	{
 		return false;
 	}
 
 	// Check this edge conditions
-	return FDlgCondition::EvaluateArray(Conditions, DlgContext);
+	return FDlgCondition::EvaluateArray(Context, Conditions);
 }
 
-void FDlgEdge::RebuildConstructedText(const UDlgContextInternal* DlgContext, FName NodeOwnerName)
+void FDlgEdge::RebuildConstructedText(const UDlgContext* Context, FName NodeOwnerName)
 {
 	if (TextArguments.Num() <= 0)
 	{
 		return;
 	}
-	
+
 	FFormatNamedArguments OrderedArguments;
 	for (const FDlgTextArgument& DlgArgument : TextArguments)
 	{
-		OrderedArguments.Add(DlgArgument.DisplayString, DlgArgument.ConstructFormatArgumentValue(DlgContext, NodeOwnerName));
+		OrderedArguments.Add(DlgArgument.DisplayString, DlgArgument.ConstructFormatArgumentValue(Context, NodeOwnerName));
 	}
 	ConstructedText = FText::AsCultureInvariant(FText::Format(Text, OrderedArguments));
 }

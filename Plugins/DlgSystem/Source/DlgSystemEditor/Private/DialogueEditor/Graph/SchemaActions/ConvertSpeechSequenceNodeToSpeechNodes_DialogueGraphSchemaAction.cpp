@@ -1,4 +1,4 @@
-// Copyright 2017-2018 Csaba Molnar, Daniel Butum
+// Copyright Csaba Molnar, Daniel Butum. All Rights Reserved.
 #include "ConvertSpeechSequenceNodeToSpeechNodes_DialogueGraphSchemaAction.h"
 
 #include "ScopedTransaction.h"
@@ -61,7 +61,7 @@ UEdGraphNode* FConvertSpeechSequenceNodeToSpeechNodes_DialogueGraphSchemaAction:
 		Speech_DialogueNode->SetNodeText(SequenceEntry.Text);
 		Speech_DialogueNode->SetNodeData(SequenceEntry.NodeData);
 		Speech_DialogueNode->SetSpeakerState(SequenceEntry.SpeakerState);
-		Speech_DialogueNode->SetVoiceSoundWave(SequenceEntry.VoiceSoundWave);
+		Speech_DialogueNode->SetVoiceSoundBase(SequenceEntry.VoiceSoundWave);
 		Speech_DialogueNode->SetVoiceDialogueWave(SequenceEntry.VoiceDialogueWave);
 		Speech_DialogueNode->SetGenericData(SequenceEntry.GenericData);
 

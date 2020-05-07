@@ -1,4 +1,4 @@
-// Copyright 2017-2018 Csaba Molnar, Daniel Butum
+// Copyright Csaba Molnar, Daniel Butum. All Rights Reserved.
 #include "DlgMemory.h"
 #include "DlgHelper.h"
 
@@ -34,7 +34,6 @@ void FDlgMemory::SetNodeVisited(const FGuid& DlgGuid, int32 NodeIndex)
 	History->VisitedNodeIndices.Add(NodeIndex);
 }
 
-
 bool FDlgMemory::IsNodeVisited(const FGuid& DlgGuid, int32 NodeIndex) const
 {
 	const FDlgHistory* History = HistoryMap.Find(DlgGuid);
@@ -46,7 +45,6 @@ bool FDlgMemory::IsNodeVisited(const FGuid& DlgGuid, int32 NodeIndex) const
 	const int32* FoundIndex = History->VisitedNodeIndices.Find(NodeIndex);
 	return FoundIndex != nullptr;
 }
-
 
 void FDlgMemory::Serialize(FArchive& Ar)
 {

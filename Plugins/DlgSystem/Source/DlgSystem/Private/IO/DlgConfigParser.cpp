@@ -1,4 +1,4 @@
-// Copyright 2017-2018 Csaba Molnar, Daniel Butum
+// Copyright Csaba Molnar, Daniel Butum. All Rights Reserved.
 #include "IO/DlgConfigParser.h"
 
 #include "Logging/LogMacros.h"
@@ -8,6 +8,8 @@
 #include "UObject/EnumProperty.h"
 #include "UObject/UObjectIterator.h"
 #include "UObject/TextProperty.h"
+
+#include "NYReflectionHelper.h"
 
 DEFINE_LOG_CATEGORY(LogDlgConfigParser);
 
@@ -82,7 +84,7 @@ bool FDlgConfigParser::ReadProperty(const UStruct* ReferenceClass, void* TargetO
 	check(From < String.Len());
 
 	const FString PropertyName = GetActiveWord();
-	UProperty* PropertyBase = ReferenceClass->FindPropertyByName(*PropertyName);
+	auto* PropertyBase = ReferenceClass->FindPropertyByName(*PropertyName);
 	if (PropertyBase != nullptr)
 	{
 		// check primitive types and enums
@@ -92,26 +94,26 @@ bool FDlgConfigParser::ReadProperty(const UStruct* ReferenceClass, void* TargetO
 		}
 
 		// check <MAP>
-		UMapProperty* MapProperty = Cast<UMapProperty>(PropertyBase);
+		auto* MapProperty = FNYReflectionHelper::CastProperty<FNYMapProperty>(PropertyBase);
 		if (MapProperty != nullptr)
 		{
 			return ReadMap(TargetObject, *MapProperty, DefaultObjectOuter);
 		}
 
 		// check <SET>
-		USetProperty* SetProperty = Cast<USetProperty>(PropertyBase);
+		auto* SetProperty = FNYReflectionHelper::CastProperty<FNYSetProperty>(PropertyBase);
 		if (SetProperty != nullptr)
 		{
 			return ReadSet(TargetObject, *SetProperty, DefaultObjectOuter);
 		}
 	}
 
-	UProperty* ComplexPropBase = ReferenceClass->FindPropertyByName(*PropertyName);
+	auto* ComplexPropBase = ReferenceClass->FindPropertyByName(*PropertyName);
 
 	// struct
-	if (UStructProperty* StructProperty = SmartCastProperty<UStructProperty>(ComplexPropBase))
+	if (auto* StructProperty = FNYReflectionHelper::SmartCastProperty<FNYStructProperty>(ComplexPropBase))
 	{
-		return ReadComplexProperty<UStructProperty>(TargetObject,
+		return ReadComplexProperty<FNYStructProperty>(TargetObject,
 													ComplexPropBase,
 													StructProperty->Struct,
 													[](void* Ptr, const UClass*, UObject*) { return Ptr; },
@@ -132,7 +134,7 @@ bool FDlgConfigParser::ReadProperty(const UStruct* ReferenceClass, void* TargetO
 	if (bLoadByRef)
 	{
 		// sanity check: if it is not an uobject** we should not try to write it!
-		if (SmartCastProperty<UObjectProperty>(ComplexPropBase) == nullptr)
+		if (FNYReflectionHelper::SmartCastProperty<FNYObjectProperty>(ComplexPropBase) == nullptr)
 		{
 			return false;
 		}
@@ -158,7 +160,7 @@ bool FDlgConfigParser::ReadProperty(const UStruct* ReferenceClass, void* TargetO
 	{
 		ComplexPropBase = ReferenceClass->FindPropertyByName(*VariableName);
 	}
-	if (UObjectProperty* ObjectProperty = SmartCastProperty<UObjectProperty>(ComplexPropBase))
+	if (auto* ObjectProperty = FNYReflectionHelper::SmartCastProperty<FNYObjectProperty>(ComplexPropBase))
 	{
 		const UClass* Class = SmartGetPropertyClass(ComplexPropBase, TypeName);
 		if (Class == nullptr)
@@ -166,7 +168,7 @@ bool FDlgConfigParser::ReadProperty(const UStruct* ReferenceClass, void* TargetO
 			return false;
 		}
 		auto ObjectInitializer = std::bind(&FDlgConfigParser::OnInitObject, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3);
-		return ReadComplexProperty<UObjectProperty>(TargetObject, ComplexPropBase, Class, ObjectInitializer, DefaultObjectOuter);
+		return ReadComplexProperty<FNYObjectProperty>(TargetObject, ComplexPropBase, Class, ObjectInitializer, DefaultObjectOuter);
 	}
 
 	UE_LOG(LogDlgConfigParser, Warning, TEXT("Invalid token `%s` in script `%s` (line: %d) (Property expected for PropertyName = `%s`)"),
@@ -448,9 +450,9 @@ int32 FDlgConfigParser::GetActiveLineNumber() const
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void FDlgConfigParser::ConstructConfigFileInternal(const UStruct* ReferenceType, int32 TabCount, void* SourceObject, FString& OutString)
 {
-	for (UField* Field = ReferenceType->Children; Field != nullptr; Field = Field->Next)
+	for (auto* Field = FNYReflectionHelper::GetStructChildren(ReferenceType); Field != nullptr; Field = Field->Next)
 	{
-		UBoolProperty* BoolProp = Cast<UBoolProperty>(Field);
+		auto* BoolProp = FNYReflectionHelper::CastProperty<FNYBoolProperty>(Field);
 		if (BoolProp != nullptr)
 		{
 			OutString += BoolProp->GetName() + " " + (BoolProp->GetPropertyValue_InContainer(SourceObject) ? "True\n" : "False\n");
@@ -459,33 +461,33 @@ void FDlgConfigParser::ConstructConfigFileInternal(const UStruct* ReferenceType,
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-bool FDlgConfigParser::TryToReadPrimitiveProperty(void* TargetObject, UProperty* PropertyBase)
+bool FDlgConfigParser::TryToReadPrimitiveProperty(void* TargetObject, FNYProperty* PropertyBase)
 {
-	if (ReadPrimitiveProperty<bool, UBoolProperty>(TargetObject, PropertyBase, std::bind(&FDlgConfigParser::GetAsBool, this), "Bool", false))
+	if (ReadPrimitiveProperty<bool, FNYBoolProperty>(TargetObject, PropertyBase, std::bind(&FDlgConfigParser::GetAsBool, this), "Bool", false))
 	{
 		return true;
 	}
-	if (ReadPrimitiveProperty<float, UFloatProperty>(TargetObject, PropertyBase, std::bind(&FDlgConfigParser::GetAsFloat, this), "float", false))
+	if (ReadPrimitiveProperty<float, FNYFloatProperty>(TargetObject, PropertyBase, std::bind(&FDlgConfigParser::GetAsFloat, this), "float", false))
 	{
 		return true;
 	}
-	if (ReadPrimitiveProperty<int32, UIntProperty>(TargetObject, PropertyBase, std::bind(&FDlgConfigParser::GetAsInt32, this), "int32", false))
+	if (ReadPrimitiveProperty<int32, FNYIntProperty>(TargetObject, PropertyBase, std::bind(&FDlgConfigParser::GetAsInt32, this), "int32", false))
 	{
 		return true;
 	}
-	if (ReadPrimitiveProperty<int64, UInt64Property>(TargetObject, PropertyBase, std::bind(&FDlgConfigParser::GetAsInt64, this), "int64", false))
+	if (ReadPrimitiveProperty<int64, FNYInt64Property>(TargetObject, PropertyBase, std::bind(&FDlgConfigParser::GetAsInt64, this), "int64", false))
 	{
 		return true;
 	}
-	if (ReadPrimitiveProperty<FName, UNameProperty>(TargetObject, PropertyBase, std::bind(&FDlgConfigParser::GetAsName, this), "FName", false))
+	if (ReadPrimitiveProperty<FName, FNYNameProperty>(TargetObject, PropertyBase, std::bind(&FDlgConfigParser::GetAsName, this), "FName", false))
 	{
 		return true;
 	}
-	if (ReadPrimitiveProperty<FString, UStrProperty>(TargetObject, PropertyBase, std::bind(&FDlgConfigParser::GetAsString, this), "FString", true))
+	if (ReadPrimitiveProperty<FString, FNYStrProperty>(TargetObject, PropertyBase, std::bind(&FDlgConfigParser::GetAsString, this), "FString", true))
 	{
 		return true;
 	}
-	if (ReadPrimitiveProperty<FText, UTextProperty>(TargetObject, PropertyBase, std::bind(&FDlgConfigParser::GetAsText, this), "FText", true))
+	if (ReadPrimitiveProperty<FText, FNYTextProperty>(TargetObject, PropertyBase, std::bind(&FDlgConfigParser::GetAsText, this), "FText", true))
 	{
 		return true;
 	}
@@ -494,7 +496,7 @@ bool FDlgConfigParser::TryToReadPrimitiveProperty(void* TargetObject, UProperty*
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-bool FDlgConfigParser::TryToReadEnum(void* Target, UProperty* PropertyBase)
+bool FDlgConfigParser::TryToReadEnum(void* Target, FNYProperty* PropertyBase)
 {
 	auto OnGetAsEnum = [this, &PropertyBase]() -> uint8
 	{
@@ -508,17 +510,18 @@ bool FDlgConfigParser::TryToReadEnum(void* Target, UProperty* PropertyBase)
 			Value = FName(*String.Mid(From, Len));
 		}
 
-		UEnumProperty* Prop = SmartCastProperty<UEnumProperty>(PropertyBase);
+		auto* Prop = FNYReflectionHelper::SmartCastProperty<FNYEnumProperty>(PropertyBase);
 		if (Prop == nullptr || Prop->GetEnum() == nullptr)
 		{
 			return 0;
 		}
 
-		check(Cast<UByteProperty>(Prop->GetUnderlyingProperty()));
+		check(FNYReflectionHelper::CastProperty<FNYByteProperty>(Prop->GetUnderlyingProperty()));
 		return uint8(Prop->GetEnum()->GetIndexByName(Value));
 	};
+
 	// enum can't be pure array atm!!!
-	UEnumProperty* EnumProp = Cast<UEnumProperty>(PropertyBase);
+	auto* EnumProp = FNYReflectionHelper::CastProperty<FNYEnumProperty>(PropertyBase);
 	if (EnumProp != nullptr)
 	{
 		FindNextWord();
@@ -541,7 +544,7 @@ bool FDlgConfigParser::TryToReadEnum(void* Target, UProperty* PropertyBase)
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-bool FDlgConfigParser::ReadSet(void* TargetObject, USetProperty& Property, UObject* DefaultObjectOuter)
+bool FDlgConfigParser::ReadSet(void* TargetObject, FNYSetProperty& Property, UObject* DefaultObjectOuter)
 {
 	FScriptSetHelper Helper(&Property, Property.ContainerPtrToValuePtr<uint8>(TargetObject));
 	Helper.EmptyElements();
@@ -556,14 +559,14 @@ bool FDlgConfigParser::ReadSet(void* TargetObject, USetProperty& Property, UObje
 		const int32 Index = Helper.AddDefaultValue_Invalid_NeedsRehash();
 		bool bDone = false;
 		uint8* ElementPtr = Helper.GetElementPtr(Index);
-		if (Cast<UBoolProperty>(Helper.ElementProp)) 		{ *(bool*)ElementPtr = GetAsBool();			bDone = true; }
-		else if (Cast<UFloatProperty>(Helper.ElementProp)) 	{ *(float*)ElementPtr = GetAsFloat();		bDone = true; }
-		else if (Cast<UIntProperty>(Helper.ElementProp)) 	{ *(int32*)ElementPtr = GetAsInt32();		bDone = true; }
-		else if (Cast<UInt64Property>(Helper.ElementProp)) 	{ *(int64*)ElementPtr = GetAsInt64();		bDone = true; }
-		else if (Cast<UNameProperty>(Helper.ElementProp)) 	{ *(FName*)ElementPtr = GetAsName();		bDone = true; }
-		else if (Cast<UStrProperty>(Helper.ElementProp)) 	{ *(FString*)ElementPtr = GetAsString();	bDone = true; }
-		else if (Cast<UTextProperty>(Helper.ElementProp)) 	{ *(FText*)ElementPtr = GetAsText();		bDone = true; }
-		// else if (Cast<UByteProperty>(Helper.ElementProp))	{ *(uint8*)ElementPtr	= OnGetAsEnum();	bDone = true; } // would not work, check enum above
+		if (FNYReflectionHelper::CastProperty<FNYBoolProperty>(Helper.ElementProp))       { *(bool*)ElementPtr = GetAsBool();		bDone = true; }
+		else if (FNYReflectionHelper::CastProperty<FNYFloatProperty>(Helper.ElementProp)) { *(float*)ElementPtr = GetAsFloat();		bDone = true; }
+		else if (FNYReflectionHelper::CastProperty<FNYIntProperty>(Helper.ElementProp))   { *(int32*)ElementPtr = GetAsInt32();		bDone = true; }
+		else if (FNYReflectionHelper::CastProperty<FNYInt64Property>(Helper.ElementProp)) { *(int64*)ElementPtr = GetAsInt64();		bDone = true; }
+		else if (FNYReflectionHelper::CastProperty<FNYNameProperty>(Helper.ElementProp))  { *(FName*)ElementPtr = GetAsName();		bDone = true; }
+		else if (FNYReflectionHelper::CastProperty<FNYStrProperty>(Helper.ElementProp))   { *(FString*)ElementPtr = GetAsString();	bDone = true; }
+		else if (FNYReflectionHelper::CastProperty<FNYTextProperty>(Helper.ElementProp))  { *(FText*)ElementPtr = GetAsText();		bDone = true; }
+		// else if (Cast<FNYReflectionHelper::CastProperty>(Helper.ElementProp))	{ *(uint8*)ElementPtr	= OnGetAsEnum();	bDone = true; } // would not work, check enum above
 
 		if (!bDone)
 		{
@@ -578,7 +581,7 @@ bool FDlgConfigParser::ReadSet(void* TargetObject, USetProperty& Property, UObje
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-bool FDlgConfigParser::ReadMap(void* TargetObject, UMapProperty& Property, UObject* DefaultObjectOuter)
+bool FDlgConfigParser::ReadMap(void* TargetObject, FNYMapProperty& Property, UObject* DefaultObjectOuter)
 {
 	FScriptMapHelper Helper(&Property, Property.ContainerPtrToValuePtr<uint8>(TargetObject));
 	Helper.EmptyValues();
@@ -592,22 +595,22 @@ bool FDlgConfigParser::ReadMap(void* TargetObject, UMapProperty& Property, UObje
 	{
 		const int32 Index = Helper.AddDefaultValue_Invalid_NeedsRehash();
 		void* Ptrs[] = { Helper.GetKeyPtr(Index), Helper.GetValuePtr(Index) };
-		UProperty* Props[] = { Helper.KeyProp, Helper.ValueProp };
+		FNYProperty* Props[] = { Helper.KeyProp, Helper.ValueProp };
 		bool bDone = false;
 
 		for (int32 i = 0; i < 2; ++i)
 		{
-			if (Cast<UBoolProperty>(Props[i]))			{ *(bool*)Ptrs[i]	 = GetAsBool();		bDone = true; }
-			else if (Cast<UFloatProperty>(Props[i]))	{ *(float*)Ptrs[i]	 = GetAsFloat();	bDone = true; }
-			else if (Cast<UIntProperty>(Props[i]))		{ *(int32*)Ptrs[i]	 = GetAsInt32();	bDone = true; }
-			else if (Cast<UInt64Property>(Props[i]))	{ *(int64*)Ptrs[i]	 = GetAsInt64();	bDone = true; }
-			else if (Cast<UNameProperty>(Props[i]))		{ *(FName*)Ptrs[i]	 = GetAsName();		bDone = true; }
-			else if (Cast<UStrProperty>(Props[i]))		{ *(FString*)Ptrs[i] = GetAsString();	bDone = true; }
-			else if (Cast<UTextProperty>(Props[i]))		{ *(FText*)Ptrs[i]   = GetAsText();		bDone = true; }
+			if (FNYReflectionHelper::CastProperty<FNYBoolProperty>(Props[i]))			{ *(bool*)Ptrs[i]	 = GetAsBool();		bDone = true; }
+			else if (FNYReflectionHelper::CastProperty<FNYFloatProperty>(Props[i]))	{ *(float*)Ptrs[i]	 = GetAsFloat();	bDone = true; }
+			else if (FNYReflectionHelper::CastProperty<FNYIntProperty>(Props[i]))		{ *(int32*)Ptrs[i]	 = GetAsInt32();	bDone = true; }
+			else if (FNYReflectionHelper::CastProperty<FNYInt64Property>(Props[i]))	{ *(int64*)Ptrs[i]	 = GetAsInt64();	bDone = true; }
+			else if (FNYReflectionHelper::CastProperty<FNYNameProperty>(Props[i]))		{ *(FName*)Ptrs[i]	 = GetAsName();		bDone = true; }
+			else if (FNYReflectionHelper::CastProperty<FNYStrProperty>(Props[i]))		{ *(FString*)Ptrs[i] = GetAsString();	bDone = true; }
+			else if (FNYReflectionHelper::CastProperty<FNYTextProperty>(Props[i]))		{ *(FText*)Ptrs[i]   = GetAsText();		bDone = true; }
 			else if (i == 1 && bHasNullptr)				{ bDone = true; } // Value is nullptr, ignore
-			// else if (Cast<UByteProperty>(Props[i]))		{ *(uint8*)Ptrs[i]	 = OnGetAsEnum();	bDone = true; } // would not work, check enum above
+			// else if (FNYReflectionHelper::CastProperty<FNYByteProperty>(Props[i]))		{ *(uint8*)Ptrs[i]	 = OnGetAsEnum();	bDone = true; } // would not work, check enum above
 
-			UStructProperty* StructVal = Cast<UStructProperty>(Props[i]);
+			auto* StructVal = FNYReflectionHelper::CastProperty<FNYStructProperty>(Props[i]);
 			if (StructVal != nullptr)
 			{
 				if (!CompareToActiveWord("{"))
@@ -656,13 +659,13 @@ void* FDlgConfigParser::OnInitObject(void* ValuePtr, const UClass* ChildClass, U
 }
 
 /** gets the UClass from an UObject or from an array of UObjects */
-const UClass* FDlgConfigParser::SmartGetPropertyClass(UProperty* Property, const FString& TypeName)
+const UClass* FDlgConfigParser::SmartGetPropertyClass(FNYProperty* Property, const FString& TypeName)
 {
-	UObjectProperty* ObjectProperty = SmartCastProperty<UObjectProperty>(Property);
+	auto* ObjectProperty = FNYReflectionHelper::SmartCastProperty<FNYObjectProperty>(Property);
 	check(ObjectProperty != nullptr);
 
 	const UClass* Class = nullptr;
-	if (Cast<UArrayProperty>(Property) != nullptr)
+	if (FNYReflectionHelper::CastProperty<FNYArrayProperty>(Property) != nullptr)
 	{
 		Class = ObjectProperty->PropertyClass;
 	}

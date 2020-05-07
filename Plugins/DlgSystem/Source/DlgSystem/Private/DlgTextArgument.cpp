@@ -1,4 +1,4 @@
-// Copyright 2017-2018 Csaba Molnar, Daniel Butum
+// Copyright Csaba Molnar, Daniel Butum. All Rights Reserved.
 #include "DlgTextArgument.h"
 
 #include "UObject/TextProperty.h"
@@ -6,7 +6,7 @@
 #include "DlgSystemPrivatePCH.h"
 #include "DlgContextInternal.h"
 #include "DlgDialogueParticipant.h"
-#include "DlgReflectionHelper.h"
+#include "NYReflectionHelper.h"
 #include "Logging/DlgLogger.h"
 
 
@@ -19,12 +19,12 @@ FArchive& operator<<(FArchive &Ar, FDlgTextArgument& DlgCondition)
 	return Ar;
 }
 
-FFormatArgumentValue FDlgTextArgument::ConstructFormatArgumentValue(const UDlgContextInternal* DlgContext, FName NodeOwner) const
+FFormatArgumentValue FDlgTextArgument::ConstructFormatArgumentValue(const UDlgContext* Context, FName NodeOwner) const
 {
 	// If participant name is not valid we use the node owner name
 	const FName ValidParticipantName = ParticipantName == NAME_None ? NodeOwner : ParticipantName;
 
-	const UObject* Participant = DlgContext->GetConstParticipant(ValidParticipantName);
+	const UObject* Participant = Context->GetConstParticipant(ValidParticipantName);
 	if (Participant == nullptr)
 	{
 		FDlgLogger::Get().Errorf(
@@ -40,16 +40,16 @@ FFormatArgumentValue FDlgTextArgument::ConstructFormatArgumentValue(const UDlgCo
 			return FFormatArgumentValue(IDlgDialogueParticipant::Execute_GetIntValue(Participant, VariableName));
 
 		case EDlgTextArgumentType::ClassInt:
-			return FFormatArgumentValue(UDlgReflectionHelper::GetVariable<UIntProperty, int32>(Participant, VariableName));
+			return FFormatArgumentValue(FNYReflectionHelper::GetVariable<FNYIntProperty, int32>(Participant, VariableName));
 
 		case EDlgTextArgumentType::DialogueFloat:
 			return FFormatArgumentValue(IDlgDialogueParticipant::Execute_GetFloatValue(Participant, VariableName));
 
 		case EDlgTextArgumentType::ClassFloat:
-			return FFormatArgumentValue(UDlgReflectionHelper::GetVariable<UFloatProperty, float>(Participant, VariableName));
+			return FFormatArgumentValue(FNYReflectionHelper::GetVariable<FNYFloatProperty, float>(Participant, VariableName));
 
 		case EDlgTextArgumentType::ClassText:
-			return FFormatArgumentValue(UDlgReflectionHelper::GetVariable<UTextProperty, FText>(Participant, VariableName));
+			return FFormatArgumentValue(FNYReflectionHelper::GetVariable<FNYTextProperty, FText>(Participant, VariableName));
 
 		case EDlgTextArgumentType::DisplayName:
 			return FFormatArgumentValue(IDlgDialogueParticipant::Execute_GetParticipantDisplayName(Participant, NodeOwner));

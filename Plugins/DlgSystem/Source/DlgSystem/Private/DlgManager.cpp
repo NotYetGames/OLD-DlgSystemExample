@@ -1,4 +1,4 @@
-// Copyright 2017-2018 Csaba Molnar, Daniel Butum
+// Copyright Csaba Molnar, Daniel Butum. All Rights Reserved.
 #include "DlgManager.h"
 
 #include "UObject/UObjectIterator.h"
@@ -6,6 +6,7 @@
 #include "Interfaces/IPluginManager.h"
 #include "Engine/Blueprint.h"
 #include "EngineUtils.h"
+#include "Engine/Engine.h"
 
 #include "IDlgSystemModule.h"
 #include "DlgSystemPrivatePCH.h"
@@ -15,6 +16,84 @@
 #include "DlgContextInternal.h"
 #include "Logging/DlgLogger.h"
 #include "DlgHelper.h"
+#include "NYReflectionHelper.h"
+
+TWeakObjectPtr<const UObject> UDlgManager::UserWorldContextObjectPtr = nullptr;
+
+UDlgContext* UDlgManager::StartDialogueWithDefaultParticipants(UObject* WorldContextObject, UDlgDialogue* Dialogue)
+{
+	if (!IsValid(Dialogue))
+	{
+		FDlgLogger::Get().Error(TEXT("Failed to start dialogue - Invalid dialogue (is nullptr)!"));
+		return nullptr;
+	}
+
+	// Create empty map of participants we need
+	TSet<FName> ParticipantSet;
+	Dialogue->GetAllParticipantNames(ParticipantSet);
+	TArray<UObject*> Participants;
+
+	// Maps from Participant Name => Objects that have that participant name
+	TMap<FName, TArray<UObject*>> ObjectMap;
+	for (const FName& Name : ParticipantSet)
+	{
+		ObjectMap.Add(Name, {});
+	}
+
+	// Gather all objects that have our participant name
+	for (UObject* Participant : GetAllObjectsWithDialogueParticipantInterface(WorldContextObject))
+	{
+		const FName ParticipantName = IDlgDialogueParticipant::Execute_GetParticipantName(Participant);
+		if (ObjectMap.Contains(ParticipantName))
+		{
+			ObjectMap[ParticipantName].AddUnique(Participant);
+			Participants.AddUnique(Participant);
+		}
+	}
+
+	TArray<FString> MissingNames;
+	TArray<FString> DuplicatedNames;
+	for (const auto& Pair : ObjectMap)
+	{
+		if (Pair.Value.Num() == 0)
+		{
+			MissingNames.Add(Pair.Key.ToString());
+		}
+		else if (Pair.Value.Num() > 1)
+		{
+			for (UObject* Obj : Pair.Value)
+			{
+				DuplicatedNames.Add(Obj->GetName() + "(" + Pair.Key.ToString() + ")");
+			}
+		}
+	}
+
+	if (MissingNames.Num() > 0)
+	{
+		const FString NameList = FString::Join(MissingNames, *FString(", "));
+		FDlgLogger::Get().Errorf(
+			TEXT("StartDialogueWithDefaultParticipants failed for Dialogue = `%s`, the system failed to find the following participant(s): %s"),
+			*Dialogue->GetName(), *NameList
+		);
+	}
+
+	if (DuplicatedNames.Num() > 0)
+	{
+		const FString NameList = FString::Join(DuplicatedNames, *FString(", "));
+		FDlgLogger::Get().Errorf(
+			TEXT("StartDialogueWithDefaultParticipants failed for Dialogue = `%s`, the system found multiple participants using the same name: %s"),
+			*Dialogue->GetName(), *NameList
+		);
+	}
+
+	if (MissingNames.Num() > 0 || DuplicatedNames.Num() > 0)
+	{
+		return nullptr;
+	}
+
+	return StartDialogue(Dialogue, Participants);
+}
+
 
 UDlgContext* UDlgManager::StartDialogue(UDlgDialogue* Dialogue, const TArray<UObject*>& Participants)
 {
@@ -179,6 +258,35 @@ TArray<TWeakObjectPtr<AActor>> UDlgManager::GetAllActorsImplementingDialoguePart
 	return Array;
 }
 
+TArray<UObject*> UDlgManager::GetAllObjectsWithDialogueParticipantInterface(UObject* WorldContextObject)
+{
+	TArray<UObject*> Array;
+	if (WorldContextObject != nullptr)
+	{
+		if (UWorld* World = WorldContextObject->GetWorld())
+		{
+			// TObjectIterator has some weird ghost objects in editor, I failed to find a way to validate them
+			// Instead of this ActorIterate is used and the properties inside the actors are examined in a recursive way
+			// Containers are not supported yet
+			TSet<UObject*> VisitedSet;
+			for (TActorIterator<AActor> Itr(World); Itr; ++Itr)
+			{
+				GatherParticipantsRecursive(*Itr, Array, VisitedSet);
+			}
+
+			//for (TObjectIterator<UObject> Itr(World); Itr; ++Itr)
+			//{
+			//	UObject* Object = *Itr;
+			//	if (IsValid(Object) && Object->GetClass()->ImplementsInterface(UDlgDialogueParticipant::StaticClass()))
+			//	{
+			//		Array.AddUnique(Object);
+			//	}
+			//}
+		}
+	}
+	return Array;
+}
+
 TArray<UDlgDialogue*> UDlgManager::GetDialoguesWithDuplicateGuid()
 {
 	TArray<UDlgDialogue*> Dialogues = GetAllDialoguesFromMemory();
@@ -227,17 +335,17 @@ TMap<FGuid, UDlgDialogue*> UDlgManager::GetAllDialoguesGuidMap()
 
 const TMap<FGuid, FDlgHistory>& UDlgManager::GetDialogueHistory()
 {
-	return FDlgMemory::GetInstance()->GetHistoryMaps();
+	return FDlgMemory::Get().GetHistoryMaps();
 }
 
 void UDlgManager::SetDialogueHistory(const TMap<FGuid, FDlgHistory>& DlgHistory)
 {
-	FDlgMemory::GetInstance()->SetHistoryMap(DlgHistory);
+	FDlgMemory::Get().SetHistoryMap(DlgHistory);
 }
 
 void UDlgManager::ClearDialogueHistory()
 {
-	FDlgMemory::GetInstance()->Empty();
+	FDlgMemory::Get().Empty();
 }
 
 bool UDlgManager::DoesObjectImplementDialogueParticipantInterface(const UObject* Object)
@@ -366,18 +474,18 @@ void UDlgManager::GetAllDialoguesEventNames(const FName& ParticipantName, TArray
 	FDlgHelper::AppendSortedSetToArray(UniqueNames, OutArray);
 }
 
-bool UDlgManager::RegisterDialogueModuleConsoleCommands(AActor* InReferenceActor)
+bool UDlgManager::RegisterDialogueConsoleCommands()
 {
 	if (!IDlgSystemModule::IsAvailable())
 	{
 		return false;
 	}
 
-	IDlgSystemModule::Get().RegisterConsoleCommands(InReferenceActor);
+	IDlgSystemModule::Get().RegisterConsoleCommands(GetDialogueWorld());
 	return true;
 }
 
-bool UDlgManager::UnRegisterDialogueModuleConsoleCommands()
+bool UDlgManager::UnregisterDialogueConsoleCommands()
 {
 	if (!IDlgSystemModule::IsAvailable())
 	{
@@ -452,10 +560,20 @@ bool UDlgManager::ConstructParticipantMap(const UDlgDialogue* Dialogue, const TA
 		// Be sure it is a participant
 		if (!Participant->GetClass()->ImplementsInterface(UDlgDialogueParticipant::StaticClass()))
 		{
-			FDlgLogger::Get().Errorf(
-				TEXT("Failed to start dialogue = `%s` - Participant object at index = %d and Path = `%s` does not implement the IDlgDialogueParticipant interface!"),
-				*Dialogue->GetPathName(), ParticipantIndex, *Participant->GetPathName()
-			);
+			if (Participant->IsA<UBlueprint>())
+			{
+				FDlgLogger::Get().Errorf(
+					TEXT("Failed to start dialogue = `%s` - Participant object at index = %d and Path = `%s` is a Blueprint Class (from the content browser) and NOT a Blueprint Instance (from the level world)."),
+					*Dialogue->GetPathName(), ParticipantIndex, *Participant->GetPathName()
+				);
+			}
+			else
+			{
+				FDlgLogger::Get().Errorf(
+					TEXT("Failed to start dialogue = `%s` - Participant object at index = %d and Path = `%s` does not implement the IDlgDialogueParticipant/UDlgDialogueParticipant interface!"),
+					*Dialogue->GetPathName(), ParticipantIndex, *Participant->GetPathName()
+				);
+			}
 			return false;
 		}
 
@@ -473,4 +591,72 @@ bool UDlgManager::ConstructParticipantMap(const UDlgDialogue* Dialogue, const TA
 	}
 
 	return true;
+}
+
+void UDlgManager::GatherParticipantsRecursive(UObject* Object, TArray<UObject*>& Array, TSet<UObject*>& AlreadyVisited)
+{
+	if (IsValid(Object) && !AlreadyVisited.Contains(Object))
+	{
+		AlreadyVisited.Add(Object);
+		if (Object->GetClass()->ImplementsInterface(UDlgDialogueParticipant::StaticClass()))
+		{
+			Array.Add(Object);
+		}
+
+		for (auto* Property = Object->GetClass()->PropertyLink; Property != nullptr; Property = Property->PropertyLinkNext)
+		{
+			if (auto* ObjectProperty = FNYReflectionHelper::CastProperty<FNYObjectProperty>(Property))
+			{
+				GatherParticipantsRecursive(ObjectProperty->GetPropertyValue_InContainer(Object), Array, AlreadyVisited);
+			}
+
+			// TODO: handle containers and structs
+		}
+	}
+}
+
+UWorld* UDlgManager::GetDialogueWorld()
+{
+	// Try to use the user set one
+	if (UserWorldContextObjectPtr.IsValid())
+	{
+		if (auto* WorldContextObject = UserWorldContextObjectPtr.Get())
+		{
+			if (auto* World = WorldContextObject->GetWorld())
+			{
+				return World;
+			}
+		}
+	}
+
+	// Fallback to default autodetection
+	if (GEngine)
+	{
+		// Get first PIE world
+		// Copied from TakeUtils::GetFirstPIEWorld()
+		for (const FWorldContext& Context : GEngine->GetWorldContexts())
+		{
+			UWorld* World = Context.World();
+			if (!World || !World->IsPlayInEditor())
+				continue;
+
+			if (World->GetNetMode() == ENetMode::NM_Standalone ||
+				(World->GetNetMode() == ENetMode::NM_Client && Context.PIEInstance == 2))
+			{
+				return World;
+			}
+		}
+
+		// Otherwise get the first Game World
+		for (const FWorldContext& Context : GEngine->GetWorldContexts())
+		{
+			UWorld* World = Context.World();
+			if (!World || !World->IsGameWorld())
+				continue;
+
+			return World;
+		}
+	}
+
+	return nullptr;
 }

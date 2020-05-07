@@ -1,4 +1,4 @@
-// Copyright 2017-2018 Csaba Molnar, Daniel Butum
+// Copyright Csaba Molnar, Daniel Butum. All Rights Reserved.
 #pragma once
 #include "CoreMinimal.h"
 
@@ -44,7 +44,7 @@ public:
 	}
 
 	// Begin UDlgNode Interface.
-	bool HandleNodeEnter(UDlgContextInternal* DlgContext, TSet<const UDlgNode*> NodesEnteredWithThisStep) override;
+	bool HandleNodeEnter(UDlgContext* Context, TSet<const UDlgNode*> NodesEnteredWithThisStep) override;
 
 #if WITH_EDITOR
 	FString GetNodeTypeString() const override { return TEXT("Selector"); }
