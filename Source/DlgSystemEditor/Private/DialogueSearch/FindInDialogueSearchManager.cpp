@@ -1,4 +1,4 @@
-// Copyright 2017-2018 Csaba Molnar, Daniel Butum
+// Copyright Csaba Molnar, Daniel Butum. All Rights Reserved.
 #include "FindInDialogueSearchManager.h"
 
 #include "Widgets/Docking/SDockTab.h"
@@ -18,6 +18,12 @@
 
 #define LOCTEXT_NAMESPACE "SDialogueBrowser"
 
+#if ENGINE_MINOR_VERSION >= 24
+	#define NY_ARRAY_COUNT UE_ARRAY_COUNT
+#else
+	#define NY_ARRAY_COUNT ARRAY_COUNT
+#endif
+
 FFindInDialogueSearchManager* FFindInDialogueSearchManager::Instance = nullptr;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -35,7 +41,7 @@ FFindInDialogueSearchManager* FFindInDialogueSearchManager::Get()
 FFindInDialogueSearchManager::FFindInDialogueSearchManager()
 {
 	// Create the Tab Ids
-	for (int32 TabIdx = 0; TabIdx < ARRAY_COUNT(GlobalFindResultsTabIDs); TabIdx++)
+	for (int32 TabIdx = 0; TabIdx < NY_ARRAY_COUNT(GlobalFindResultsTabIDs); TabIdx++)
 	{
 		const FName TabID = FName(*FString::Printf(TEXT("GlobalNotYetDialogueFindResults_%02d"), TabIdx + 1));
 		GlobalFindResultsTabIDs[TabIdx] = TabID;
@@ -716,7 +722,7 @@ TSharedPtr<SFindInDialogues> FFindInDialogueSearchManager::OpenGlobalFindResults
 	}
 
 	// Find the unopened tab, that we can open
-	for (int32 Idx = 0; Idx < ARRAY_COUNT(GlobalFindResultsTabIDs); ++Idx)
+	for (int32 Idx = 0; Idx < NY_ARRAY_COUNT(GlobalFindResultsTabIDs); ++Idx)
 	{
 		const FName GlobalTabId = GlobalFindResultsTabIDs[Idx];
 		if (!OpenGlobalTabIDs.Contains(GlobalTabId))
@@ -778,12 +784,16 @@ void FFindInDialogueSearchManager::EnableGlobalFindResults(TSharedPtr<FWorkspace
 		true);
 
 	// Register tab spawners
-	for (int32 TabIdx = 0; TabIdx < ARRAY_COUNT(GlobalFindResultsTabIDs); TabIdx++)
+	for (int32 TabIdx = 0; TabIdx < NY_ARRAY_COUNT(GlobalFindResultsTabIDs); TabIdx++)
 	{
 		const FName TabID = GlobalFindResultsTabIDs[TabIdx];
 
 		// Tab not registered yet, good.
+#if ENGINE_MINOR_VERSION >= 23
+		if (!GlobalTabManager->HasTabSpawner(TabID))
+#else
 		if (!GlobalTabManager->CanSpawnTab(TabID))
+#endif
 		{
 			const FText DisplayName = FText::Format(LOCTEXT("GlobalFindResultsDisplayName", "Find in Dialogues {0}"),
 													FText::AsNumber(TabIdx + 1));
@@ -811,10 +821,15 @@ void FFindInDialogueSearchManager::DisableGlobalFindResults()
 	GlobalFindResultsWidgets.Empty();
 
 	// Unregister tab spawners
-	for (int32 TabIdx = 0; TabIdx < ARRAY_COUNT(GlobalFindResultsTabIDs); TabIdx++)
+	for (int32 TabIdx = 0; TabIdx < NY_ARRAY_COUNT(GlobalFindResultsTabIDs); TabIdx++)
 	{
 		const FName TabID = GlobalFindResultsTabIDs[TabIdx];
-		if (GlobalTabManager->CanSpawnTab(TabID))
+
+#if ENGINE_MINOR_VERSION >= 23
+		if (!GlobalTabManager->HasTabSpawner(TabID))
+#else
+		if (!GlobalTabManager->CanSpawnTab(TabID))
+#endif
 		{
 			GlobalTabManager->UnregisterNomadTabSpawner(TabID);
 		}
@@ -946,3 +961,4 @@ void FFindInDialogueSearchManager::HandleAssetLoaded(UObject* InAsset)
 }
 
 #undef LOCTEXT_NAMESPACE
+#undef NY_ARRAY_COUNT

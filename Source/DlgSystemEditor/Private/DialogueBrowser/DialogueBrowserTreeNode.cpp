@@ -1,4 +1,4 @@
-// Copyright 2017-2018 Csaba Molnar, Daniel Butum
+// Copyright Csaba Molnar, Daniel Butum. All Rights Reserved.
 #include "DialogueBrowserTreeNode.h"
 
 #include "Widgets/Views/STreeView.h"
@@ -167,7 +167,7 @@ FReply FDialogueBrowserTreeDialogueNode::OnClick()
 {
 	if (Dialogue.IsValid())
 	{
-		FAssetEditorManager::Get().OpenEditorForAsset(const_cast<UDlgDialogue*>(Dialogue.Get()));
+		FDialogueEditorUtilities::OpenEditorForAsset(Dialogue.Get());
 		return FReply::Handled();
 	}
 

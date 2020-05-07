@@ -1,4 +1,4 @@
-// Copyright 2017-2018 Csaba Molnar, Daniel Butum
+// Copyright Csaba Molnar, Daniel Butum. All Rights Reserved.
 #include "DialogueGraphSchema.h"
 
 #include "Framework/MultiBox/MultiBoxBuilder.h"
@@ -6,6 +6,10 @@
 #include "ScopedTransaction.h"
 #include "AssetData.h"
 #include "GraphEditorActions.h"
+
+#if ENGINE_MINOR_VERSION >= 24
+#include "ToolMenu.h"
+#endif
 
 #include "DialogueGraph.h"
 #include "DialogueEditor/Nodes/DialogueGraphNode.h"
@@ -64,9 +68,27 @@ void UDialogueGraphSchema::GetGraphContextActions(FGraphContextMenuBuilder& Cont
 	}
 }
 
+#if ENGINE_MINOR_VERSION >= 24
+void UDialogueGraphSchema::GetContextMenuActions(UToolMenu* Menu, UGraphNodeContextMenuContext* Context) const
+{
+	if (Context->Node && !Context->bIsDebugging)
+	{
+		// Menu for right clicking on node
+		FToolMenuSection& Section = Menu->AddSection("DialogueGraphSchemaNodeActions", LOCTEXT("NodeActionsMenuHeader", "Node Actions"));
+
+		// This action is handled in UDialogueGraphSchema::BreakNodeLinks, and the action is registered in SGraphEditorImpl (not by us)
+		Section.AddMenuEntry(FGraphEditorCommands::Get().BreakNodeLinks);
+	}
+
+	// The rest of the menus are implemented in the each nodes GetContextMenuActions method
+	Super::GetContextMenuActions(Menu, Context);
+}
+
+#else
+
 void UDialogueGraphSchema::GetContextMenuActions(const UEdGraph* CurrentGraph, const UEdGraphNode* InGraphNode, const UEdGraphPin* InGraphPin, FMenuBuilder* MenuBuilder, bool bIsDebugging) const
 {
-	if (InGraphNode)
+	if (InGraphNode && !bIsDebugging)
 	{
 		// Menu for right clicking on node
 		MenuBuilder->BeginSection("DialogueGraphSchemaNodeActions", LOCTEXT("NodeActionsMenuHeader", "Node Actions"));
@@ -80,6 +102,7 @@ void UDialogueGraphSchema::GetContextMenuActions(const UEdGraph* CurrentGraph, c
 	// The rest of the menus are implemented in the each nodes GetContextMenuActions method
 	Super::GetContextMenuActions(CurrentGraph, InGraphNode, InGraphPin, MenuBuilder, bIsDebugging);
 }
+#endif // ENGINE_MINOR_VERSION >= 24
 
 void UDialogueGraphSchema::CreateDefaultNodesForGraph(UEdGraph& Graph) const
 {
@@ -231,7 +254,11 @@ bool UDialogueGraphSchema::CreateAutomaticConversionNodeAndConnections(UEdGraphP
 	UDialogueGraphNode* NodeA = CastChecked<UDialogueGraphNode>(PinA->GetOwningNode());
 	UDialogueGraphNode* NodeB = CastChecked<UDialogueGraphNode>(PinB->GetOwningNode());
 
-	UDialogueGraphNode_Edge* GraphNode_Edge = Graph::SpawnGraphNodeFromTemplate<UDialogueGraphNode_Edge>(NodeA->GetGraph(), FVector2D(0.0f, 0.0f), false);
+	UDialogueGraphNode_Edge* GraphNode_Edge =
+		FDialogueEditorUtilities::SpawnGraphNodeFromTemplate<UDialogueGraphNode_Edge>(
+			NodeA->GetGraph(), FVector2D(0.0f, 0.0f), false
+		);
+
 	// Create proxy connection from output -> input
 	if (PinA->Direction == EGPD_Output)
 	{

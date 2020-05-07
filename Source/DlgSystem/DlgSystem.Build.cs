@@ -1,4 +1,4 @@
-// Copyright 2017-2018 Csaba Molnar, Daniel Butum
+// Copyright Csaba Molnar, Daniel Butum. All Rights Reserved.
 
 using UnrealBuildTool;
 using System.IO;
@@ -13,7 +13,8 @@ public class DlgSystem : ModuleRules
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
 		bEnforceIWYU = true;
 		//MinFilesUsingPrecompiledHeaderOverride = 1;
-		//bFasterWithoutUnity = true;
+		// bFasterWithoutUnity = true;
+		// bUseUnity = false;
 		//PrivatePCHHeaderFile = "Private/DlgSystemPrivatePCH.h";
 
 		PublicIncludePaths.AddRange(

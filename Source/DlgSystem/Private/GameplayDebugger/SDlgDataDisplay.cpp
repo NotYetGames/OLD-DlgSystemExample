@@ -1,4 +1,4 @@
-// Copyright 2017-2018 Csaba Molnar, Daniel Butum
+// Copyright Csaba Molnar, Daniel Butum. All Rights Reserved.
 #include "GameplayDebugger/SDlgDataDisplay.h"
 
 #include "Widgets/Layout/SBorder.h"
@@ -14,6 +14,7 @@
 #include "DlgManager.h"
 #include "DlgContext.h"
 #include "GameplayDebugger/SDlgDataPropertyValues.h"
+#include "Logging/DlgLogger.h"
 
 //////////////////////////////////////////////////////////////////////////
 DEFINE_LOG_CATEGORY(LogDlgSystemDataDisplay)
@@ -24,9 +25,9 @@ DEFINE_LOG_CATEGORY(LogDlgSystemDataDisplay)
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // SDlgDataDisplay
-void SDlgDataDisplay::Construct(const FArguments& InArgs, TWeakObjectPtr<AActor> InReferenceActor)
+void SDlgDataDisplay::Construct(const FArguments& InArgs, const TWeakObjectPtr<const UObject>& InWorldContextObjectPtr)
 {
-	ReferenceActor = InReferenceActor;
+	WorldContextObjectPtr = InWorldContextObjectPtr;
 	RootTreeItem = MakeShared<FDlgDataDisplayTreeRootNode>();
 	ActorsTreeView = SNew(STreeView<TSharedPtr<FDlgDataDisplayTreeNode>>)
 		.ItemHeight(32)
@@ -113,7 +114,7 @@ void SDlgDataDisplay::RefreshTree(bool bPreserveExpansion)
 	ActorsProperties.Empty();
 
 	// Try the actor World
-	UWorld* World = ReferenceActor.IsValid() ? ReferenceActor->GetWorld() : nullptr;
+	UWorld* World = WorldContextObjectPtr.IsValid() ? WorldContextObjectPtr->GetWorld() : nullptr;
 
 // 	// Try The Editor World
 // #if WITH_EDITOR
@@ -126,11 +127,11 @@ void SDlgDataDisplay::RefreshTree(bool bPreserveExpansion)
 	// Can't do anything without the world
 	if (!IsValid(World))
 	{
-		UE_LOG(LogDlgSystemDataDisplay,
-			   Warning,
-			   TEXT("Failed to refresh SDlgDataDisplay tree. World is a null pointer. "
-			   		"Is the game running? "
-					"Did you setup the DlgSystem Console commands in your GameMode BeginPlay/StartPlay?"));
+		FDlgLogger::Get().Error(
+			TEXT("Failed to refresh SDlgDataDisplay tree. World is a null pointer. "
+				"Is the game running? "
+				"Did you setup the DlgSystem Console commands in your GameMode BeginPlay/StartPlay?")
+		);
 		return;
 	}
 

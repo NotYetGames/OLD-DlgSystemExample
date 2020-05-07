@@ -1,25 +1,63 @@
-// Copyright 2017-2018 Csaba Molnar, Daniel Butum
+// Copyright Csaba Molnar, Daniel Butum. All Rights Reserved.
 #include "DlgContext.h"
 
 #include "DlgSystemPrivatePCH.h"
 #include "Nodes/DlgNode.h"
 #include "Nodes/DlgNode_End.h"
 #include "DlgDialogueParticipant.h"
+#include "DlgManager.h"
 #include "DlgMemory.h"
 #include "Engine/Texture2D.h"
 #include "Logging/DlgLogger.h"
+
+UWorld* UDlgContext::GetWorld() const
+{
+	if (HasAnyFlags(RF_ArchetypeObject | RF_ClassDefaultObject))
+	{
+		return nullptr;
+	}
+
+	// Get from outer
+	if (UObject* Outer = GetOuter())
+	{
+		if (UWorld* World = Outer->GetWorld())
+		{
+			return World;
+		}
+	}
+
+	// Last resort
+	return UDlgManager::GetDialogueWorld();
+}
+
+bool UDlgContext::ChooseChild(int32 OptionIndex)
+{
+	check(Dialogue);
+	if (UDlgNode* Node = GetActiveNode())
+	{
+		if (Node->OptionSelected(OptionIndex, this))
+		{
+			return true;
+		}
+	}
+
+	bDialogueEnded = true;
+	return false;
+}
 
 bool UDlgContext::ChooseChildBasedOnAllOptionIndex(int32 Index)
 {
 	if (!AllChildren.IsValidIndex(Index))
 	{
 		FDlgLogger::Get().Errorf(TEXT("Invalid index %d in UDlgContext::ChooseChildBasedOnAllOptionIndex!"), Index);
+		bDialogueEnded = true;
 		return false;
 	}
 
 	if (!AllChildren[Index].bSatisfied)
 	{
 		FDlgLogger::Get().Errorf(TEXT("Index %d is an unsatisfied edge! (UDlgContext::ChooseChildBasedOnAllOptionIndex!) Call failed!"), Index);
+		bDialogueEnded = true;
 		return false;
 	}
 
@@ -32,7 +70,24 @@ bool UDlgContext::ChooseChildBasedOnAllOptionIndex(int32 Index)
 	}
 
 	ensure(false);
+	bDialogueEnded = true;
 	return false;
+}
+
+void UDlgContext::ReevaluateChildren()
+{
+	check(Dialogue);
+	UDlgNode* Node = GetActiveNode();
+	if (!IsValid(Node))
+	{
+		FDlgLogger::Get().Errorf(
+			TEXT("Dialogue = `%s` Failed to update dialogue options for  - invalid ActiveNodeIndex %d"),
+			*Dialogue->GetPathName(), ActiveNodeIndex
+		);
+		return;
+	}
+
+	Node->ReevaluateChildren(this, {});
 }
 
 const FText& UDlgContext::GetOptionText(int32 OptionIndex) const
@@ -126,7 +181,6 @@ const FDlgEdge& UDlgContext::GetOptionFromAll(int32 Index) const
 	return *AllChildren[Index].EdgePtr;
 }
 
-
 const FText& UDlgContext::GetActiveNodeText() const
 {
 	const UDlgNode* Node = GetActiveNode();
@@ -158,6 +212,17 @@ USoundWave* UDlgContext::GetActiveNodeVoiceSoundWave() const
 	}
 
 	return Node->GetNodeVoiceSoundWave();
+}
+
+USoundBase* UDlgContext::GetActiveNodeVoiceSoundBase() const
+{
+	const UDlgNode* Node = GetActiveNode();
+	if (!IsValid(Node))
+	{
+		return nullptr;
+	}
+
+	return Node->GetNodeVoiceSoundBase();
 }
 
 UDialogueWave* UDlgContext::GetActiveNodeVoiceDialogueWave() const
@@ -249,7 +314,6 @@ FName UDlgContext::GetActiveNodeParticipantName() const
 	return Node->GetNodeParticipantName();
 }
 
-
 const UObject* UDlgContext::GetConstParticipant(FName DlgParticipantName) const
 {
 	auto* ParticipantPtr = Participants.Find(DlgParticipantName);
@@ -260,7 +324,6 @@ const UObject* UDlgContext::GetConstParticipant(FName DlgParticipantName) const
 
 	return nullptr;
 }
-
 
 bool UDlgContext::IsEdgeConnectedToVisitedNode(int32 Index, bool bLocalHistory, bool bIndexSkipsUnsatisfiedEdges) const
 {
@@ -289,16 +352,15 @@ bool UDlgContext::IsEdgeConnectedToVisitedNode(int32 Index, bool bLocalHistory, 
 	{
 		return VisitedNodeIndices.Contains(TargetIndex);
 	}
-	
+
 	if (Dialogue == nullptr)
 	{
 		FDlgLogger::Get().Errorf(TEXT("UDlgContext::IsEdgeConnectedToVisitedNode called, but the context does not have a valid dialogue!"), Index);
 		return false;
 	}
 
-	return FDlgMemory::GetInstance()->IsNodeVisited(Dialogue->GetDlgGuid(), TargetIndex);
+	return FDlgMemory::Get().IsNodeVisited(Dialogue->GetDlgGuid(), TargetIndex);
 }
-
 
 bool UDlgContext::IsEdgeConnectedToEndNode(int32 Index, bool bIndexSkipsUnsatisfiedEdges) const
 {
@@ -340,3 +402,58 @@ bool UDlgContext::IsEdgeConnectedToEndNode(int32 Index, bool bIndexSkipsUnsatisf
 	return false;
 }
 
+bool UDlgContext::EnterNode(int32 NodeIndex, TSet<const UDlgNode*> NodesEnteredWithThisStep)
+{
+	check(Dialogue);
+
+	UDlgNode* Node = GetNode(NodeIndex);
+	if (!IsValid(Node))
+	{
+		FDlgLogger::Get().Errorf(
+			TEXT("Dialogue = `%s`. Failed to enter dialogue node - invalid node index %d"),
+			*Dialogue->GetPathName(), NodeIndex
+		);
+		return false;
+	}
+
+	ActiveNodeIndex = NodeIndex;
+	FDlgMemory::Get().SetNodeVisited(Dialogue->GetDlgGuid(), ActiveNodeIndex);
+	VisitedNodeIndices.Add(ActiveNodeIndex);
+
+	return Node->HandleNodeEnter(this, NodesEnteredWithThisStep);
+}
+
+UDlgNode* UDlgContext::GetNode(int32 NodeIndex)
+{
+	check(Dialogue);
+	const TArray<UDlgNode*>& Nodes = Dialogue->GetNodes();
+	if (!Nodes.IsValidIndex(NodeIndex))
+	{
+		return nullptr;
+	}
+
+	return Nodes[NodeIndex];
+}
+
+const UDlgNode* UDlgContext::GetNode(int32 NodeIndex) const
+{
+	check(Dialogue);
+	const TArray<UDlgNode*>& Nodes = Dialogue->GetNodes();
+	if (!Nodes.IsValidIndex(NodeIndex))
+	{
+		return nullptr;
+	}
+
+	return Nodes[NodeIndex];
+}
+
+bool UDlgContext::IsNodeEnterable(int32 NodeIndex, TSet<const UDlgNode*> AlreadyVisitedNodes) const
+{
+	check(Dialogue);
+	if (const UDlgNode* Node = GetNode(NodeIndex))
+	{
+		return Node->CheckNodeEnterConditions(this, AlreadyVisitedNodes);
+	}
+
+	return false;
+}

@@ -1,4 +1,4 @@
-// Copyright 2017-2018 Csaba Molnar, Daniel Butum
+// Copyright Csaba Molnar, Daniel Butum. All Rights Reserved.
 #pragma once
 #include "Kismet/BlueprintFunctionLibrary.h"
 
@@ -22,6 +22,20 @@ class DLGSYSTEM_API UDlgManager : public UBlueprintFunctionLibrary
 	GENERATED_BODY()
 
 public:
+
+	/**
+	 * Starts a Dialogue with the provided Dialogue
+	 * The function checks all the objects in the world to gather the participants
+	 * This method can fail in the following situations:
+	 *  - The Dialogue has a Participant which does not exist in the World
+	 *	- Multiple Objects are using the same Participant Name in the World
+	 *
+	 * @returns The dialogue context object or nullptr if something went wrong
+	 */
+	UFUNCTION(BlueprintCallable, Category = "Dialogue|Launch", meta = (WorldContext = "WorldContextObject"))
+	static UDlgContext* StartDialogueWithDefaultParticipants(UObject* WorldContextObject, UDlgDialogue* Dialogue);
+
+
 	/**
 	 * Starts a Dialogue with the provided Dialogue and Participants array
 	 * This method can fail in the following situations:
@@ -88,13 +102,17 @@ public:
 	/** Gets all loaded dialogues from memory. LoadAllDialoguesIntoMemory must be called before this */
 	static TArray<UDlgDialogue*> GetAllDialoguesFromMemory();
 
-	/** Gets all the actors from the provided World that implement the Dialogue Participant Interface */
+	/** Gets all the objects from the provided World that implement the Dialogue Participant Interface. Iterates through all objects, DO NOT CALL EACH FRAME */
 	static TArray<TWeakObjectPtr<AActor>> GetAllActorsImplementingDialogueParticipantInterface(UWorld* World);
+
+	/** Gets all objects from the World that implement the Dialogue Participant Interface */
+	UFUNCTION(BlueprintPure, Category = "Dialogue|Helper", meta = (WorldContext = "WorldContextObject"))
+	static TArray<UObject*> GetAllObjectsWithDialogueParticipantInterface(UObject* WorldContextObject);
 
 	/** Gets all the dialogues that have a duplicate GUID, should not happen, like ever. */
 	static TArray<UDlgDialogue*> GetDialoguesWithDuplicateGuid();
 
-	/** Helper methods that gets all the dialouges in a map by guid. */
+	/** Helper methods that gets all the dialogues in a map by guid. */
 	static TMap<FGuid, UDlgDialogue*> GetAllDialoguesGuidMap();
 
 	/** Gets all the loaded dialogues from memory that have the ParticipantName included inside them. */
@@ -148,22 +166,60 @@ public:
 	UFUNCTION(BlueprintPure, Category = "Dialogue|Data")
 	static void GetAllDialoguesEventNames(const FName& ParticipantName, TArray<FName>& OutArray);
 
+	UE_DEPRECATED(4.21, "Use RegisterDialogueConsoleCommands Instead.")
+	UFUNCTION(BlueprintCallable, Category = "Dialogue|Console", meta=(DeprecatedFunction, DeprecationMessage="Use RegisterDialogueConsoleCommands Instead"))
+	static bool RegisterDialogueModuleConsoleCommands(AActor* InReferenceActor) { return RegisterDialogueConsoleCommands(); }
+
 	/**
 	 * Registers all the DlgSystem Module console commands.
-	 * @param InReferenceActor - The reference actor for the World. Without this the runtime module won't know how to get the UWorld.
+	 * To set the custom reference WorldContextObjectPtr, set it with SetPersistentWorldContextObject
 	 * @return true on success, false otherwise
 	 */
-	UFUNCTION(BlueprintCallable, Category = "Dialogue|Module")
-	static bool RegisterDialogueModuleConsoleCommands(AActor* InReferenceActor);
+	UFUNCTION(BlueprintCallable, Category = "Dialogue|Console")
+	static bool RegisterDialogueConsoleCommands();
+
+	UE_DEPRECATED(4.21, "Use UnregisterDialogueConsoleCommands Instead.")
+	UFUNCTION(BlueprintCallable, Category = "Dialogue|Console", meta=(DeprecatedFunction, DeprecationMessage="Use UnregisterDialogueConsoleCommands Instead"))
+	static bool UnRegisterDialogueModuleConsoleCommands() { return UnregisterDialogueConsoleCommands(); }
 
 	/**
 	 * Unregister all the DlgSystem Module console commands.
 	 * @return true on success, false otherwise
 	 */
-	UFUNCTION(BlueprintCallable, Category = "Dialogue|Module")
-	static bool UnRegisterDialogueModuleConsoleCommands();
+	UFUNCTION(BlueprintCallable, Category = "Dialogue|Console")
+	static bool UnregisterDialogueConsoleCommands();
+
+
+	// This tries to get the source world for the dialogues
+	// In the following order (the first one that is valid, returns that):
+	// 1. The user set one UserWorldContextObjectPtr (if it is set):
+	//    - Set - SetPersistentWorldContextObject
+	//    - Clear - ClearPersistentWorldContextObject
+	// 2. The first PIE world
+	// 3. The first Game World
+	UFUNCTION(BlueprintCallable, Category = "Dialogue|Persistence")
+	static UWorld* GetDialogueWorld();
+
+	// If the user wants to set the world context object manually
+	// Otherwise just use GetDialogueWorld()
+	UFUNCTION(BlueprintCallable, Category = "Dialogue|Persistence")
+	static void SetPersistentWorldContextObject(const UObject* WorldContextObject)
+	{
+		UserWorldContextObjectPtr = WorldContextObject;
+	}
+
+	UFUNCTION(BlueprintCallable, Category = "Dialogue|Persistence")
+	static void ClearPersistentWorldContextObject()
+	{
+		UserWorldContextObjectPtr.Reset();
+	}
 
 private:
 	static bool ValidateParticipant(const FString& ContextMessageFailure, const UDlgDialogue* ContextDialogue, UObject* Participant);
 	static bool ConstructParticipantMap(const UDlgDialogue* Dialogue, const TArray<UObject*>& Participants, TMap<FName, UObject*>& OutMap);
+
+	static void GatherParticipantsRecursive(UObject* Object, TArray<UObject*>& Array, TSet<UObject*>& AlreadyVisited);
+
+	// Set by the user, we will default to automagically resolve the world
+	static TWeakObjectPtr<const UObject> UserWorldContextObjectPtr;
 };

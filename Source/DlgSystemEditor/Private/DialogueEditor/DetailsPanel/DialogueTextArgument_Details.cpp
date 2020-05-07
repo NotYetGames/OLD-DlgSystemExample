@@ -1,4 +1,4 @@
-// Copyright 2017-2018 Csaba Molnar, Daniel Butum
+// Copyright Csaba Molnar, Daniel Butum. All Rights Reserved.
 #include "DialogueTextArgument_Details.h"
 
 #include "IDetailPropertyRow.h"
@@ -6,7 +6,7 @@
 #include "IDetailChildrenBuilder.h"
 #include "UObject/TextProperty.h"
 
-#include "DlgReflectionHelper.h"
+#include "NYReflectionHelper.h"
 #include "DialogueDetailsPanelUtils.h"
 #include "DialogueEditor/Nodes/DialogueGraphNode.h"
 #include "Widgets/SDialogueTextPropertyPickList.h"
@@ -132,7 +132,12 @@ TArray<FName> FDialogueTextArgument_Details::GetDialogueVariableNames(bool bCurr
 			break;
 
 		case EDlgTextArgumentType::ClassInt:
-			UDlgReflectionHelper::GetVariableNames(Dialogue->GetParticipantClass(ParticipantName), UIntProperty::StaticClass(), Suggestions);
+			FNYReflectionHelper::GetVariableNames(
+				Dialogue->GetParticipantClass(ParticipantName),
+				FNYIntProperty::StaticClass(),
+				Suggestions,
+				GetDefault<UDlgSystemSettings>()->BlacklistedReflectionClasses
+			);
 			break;
 
 		case EDlgTextArgumentType::DialogueFloat:
@@ -151,14 +156,24 @@ TArray<FName> FDialogueTextArgument_Details::GetDialogueVariableNames(bool bCurr
 		case EDlgTextArgumentType::ClassFloat:
 			if (Dialogue)
 			{
-				UDlgReflectionHelper::GetVariableNames(Dialogue->GetParticipantClass(ParticipantName), UFloatProperty::StaticClass(), Suggestions);
+				FNYReflectionHelper::GetVariableNames(
+					Dialogue->GetParticipantClass(ParticipantName),
+					FNYFloatProperty::StaticClass(),
+					Suggestions,
+					GetDefault<UDlgSystemSettings>()->BlacklistedReflectionClasses
+				);
 			}
 			break;
 
 		case EDlgTextArgumentType::ClassText:
 			if (Dialogue)
 			{
-				UDlgReflectionHelper::GetVariableNames(Dialogue->GetParticipantClass(ParticipantName), UTextProperty::StaticClass(), Suggestions);
+				FNYReflectionHelper::GetVariableNames(
+					Dialogue->GetParticipantClass(ParticipantName),
+					FNYTextProperty::StaticClass(),
+					Suggestions,
+					GetDefault<UDlgSystemSettings>()->BlacklistedReflectionClasses
+				);
 			}
 			break;
 
