@@ -1,4 +1,4 @@
-// Copyright 2017-2018 Csaba Molnar, Daniel Butum
+// Copyright Csaba Molnar, Daniel Butum. All Rights Reserved.
 #include "DlgDialogue.h"
 
 #include "UObject/DevObjectVersion.h"
@@ -242,11 +242,6 @@ bool UDlgDialogue::Modify(bool bAlwaysMarkDirty)
 	// }
 
 	return bWasSaved;
-}
-
-bool UDlgDialogue::CanEditChange(const UProperty* InProperty) const
-{
-	return Super::CanEditChange(InProperty);
 }
 
 void UDlgDialogue::PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent)

@@ -1,18 +1,7 @@
-// Copyright 2017-2018 Csaba Molnar, Daniel Butum
+// Copyright Csaba Molnar, Daniel Butum. All Rights Reserved.
 #include "DialogueGraphNode_Root.h"
 
 #include "DialogueGraphNode.h"
-
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// Begin UObject interface
-bool UDialogueGraphNode_Root::CanEditChange(const UProperty* InProperty) const
-{
-	check(IsRootNode());
-	const bool bIsEditable = Super::CanEditChange(InProperty);
-	return bIsEditable;
-}
-// End UObject interface
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Begin UEdGraphNode interface
@@ -31,7 +20,7 @@ void UDialogueGraphNode_Root::PinConnectionListChanged(UEdGraphPin* Pin)
 // Begin UDialogueGraphNode_Base interface
 void UDialogueGraphNode_Root::OnDialoguePropertyChanged(const FPropertyChangedEvent& PropertyChangedEvent)
 {
-	if (!IsValid(PropertyChangedEvent.Property) || !IsValid(PropertyChangedEvent.MemberProperty))
+	if (!PropertyChangedEvent.Property || !PropertyChangedEvent.MemberProperty)
 	{
 		return;
 	}

@@ -1,8 +1,9 @@
-// Copyright 2017-2019 Csaba Molnar, Daniel Butum
+// Copyright Csaba Molnar, Daniel Butum. All Rights Reserved.
 #include "Logging/INYLogger.h"
 #include "CoreGlobals.h"
 #include "Misc/OutputDevice.h"
 #include "Misc/UObjectToken.h"
+#include "Misc/FeedbackContext.h"
 #include "GameFramework/PlayerController.h"
 #include "Engine/Engine.h"
 #include "Logging/MessageLog.h"

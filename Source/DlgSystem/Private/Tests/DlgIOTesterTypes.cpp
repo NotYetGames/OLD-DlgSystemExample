@@ -1,9 +1,10 @@
-// Copyright 2017-2018 Csaba Molnar, Daniel Butum
+// Copyright Csaba Molnar, Daniel Butum. All Rights Reserved.
 #include "Tests/DlgIOTesterTypes.h"
 
 #include "Engine/Engine.h"
 
 #include "Tests/DlgTesterHelper.h"
+#include "NYReflectionTypes.h"
 
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -184,8 +185,8 @@ void FDlgTestStructPrimitives::GenerateRandomData(const FDlgIOTesterOptions& InO
 	Guid = FGuid::NewGuid();
 
 	const TArray<UClass*> ClassesPool = {
-		UField::StaticClass(), UStruct::StaticClass(), nullptr, UObject::StaticClass(), UBoolProperty::StaticClass(), UIntProperty::StaticClass(),
-		UStructProperty::StaticClass(), UStrProperty::StaticClass(), nullptr
+		UField::StaticClass(), UStruct::StaticClass(), nullptr, UObject::StaticClass(),
+		AActor::StaticClass(), APawn::StaticClass(), nullptr
 	};
 	Class = ClassesPool[FMath::RandHelper(ClassesPool.Num())];
 
