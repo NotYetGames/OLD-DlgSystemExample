@@ -1,3 +1,63 @@
+# 9.0
+
+## Important breaking change
+
+- **Modified**  `IDlgDialogueParticipant` interface functions signature
+	- Removed `const FName&` in favour of `FName` from all methods
+	- Added `UDlgContext` as an argument to `CheckCondition` and `OnDialogueEvent`. This was done because if you start a Dialogue where the start (root) node has an enter event and in that enter event you want to get the current dialogue context you can't. Because the dialogue context returns after the start dialogue is called.
+
+- **Renamed** `UDlgReflectionHelper` to `FNYReflectionHelper`
+
+## Other Changes
+
+- **Deprecated** `RegisterDialogueModuleConsoleCommands` and `UnRegisterDialogueModuleConsoleCommands`, you should use `RegisterDialogueConsoleCommands` and `UnregisterDialogueConsoleCommands` instead
+
+- **Add** Custom Events and Conditions
+	- Custom Event - Create a new blueprint with parent class `UDlgEventCustom` or `UDlgEventCustomHideCategories` (This is the same as UDlgEventCustom but it does NOT show the categories)
+	- Custom Condition - Create a new blueprint with parent class `UDlgConditionCustom` or `UDlgConditionCustomHideCategories` ( This is the same as UDlgConditionCustom but it does NOT show the categories)
+
+- **Add** setting option `bRegisterDialogueConsoleCommandsAutomatically` (default true) to automatically register the dialogue console commands on Begin Play
+
+- **Improve** Error message on start dialogue when you give it a Blueprint Class instead of a Blueprint Instance
+
+- **Improve** The Sound wave is now a `USoundBase` instead of a `USoundWave` to include more sound objects like cues.
+  - **Added** `GetActiveNodeVoiceSoundBase` to the Dialogue Context. `GetActiveNodeVoiceSoundWave` just calls the SoundBase getter and casts to a `USoundWave`
+
+- **Improvement** All getters of `UDlgNode` are blueprint accessible
+
+- **Improvement** Reflection code is now engine version independent (so that it supports 4.25 more nicely)
+
+- **Improvement** The Dialogue system gets the World from the game automatically (see `UDlgManger::GetDialogueWorld`), if you want to or need to set the  world manually, call `UDlgManger::SetPersistentWorldContextObject`
+
+- **Fix** Null pointer check for LoadedWorld
+- **Fix** Blueprint Nativization for 4.24
+
+# 8.0.2
+
+- **Fix** Linux Editor Compile
+
+- **Add** `HasDialogueEnded()` function to the Dialogue Context
+
+- **Add** `StartDialogueWithDefaultParticipants()` helper function to the Dialogue Manager
+```cpp
+	/**
+	 * Starts a Dialogue with the provided Dialogue
+	 * The function checks all the objects in the world to gather the participants
+	 * This method can fail in the following situations:
+	 *  - The Dialogue has a Participant which does not exist in the World
+	 *	- Multiple Objects are using the same Participant Name in the World
+	 *
+	 * @returns The dialogue context object or nullptr if something went wrong
+	 *
+	*/
+	UFUNCTION(BlueprintCallable, Category = "Dialogue|Launch", meta = (WorldContext = "WorldContextObject"))
+	static UDlgContext* StartDialogueWithDefaultParticipants(UObject* WorldContextObject, UDlgDialogue* Dialogue);
+```
+
+# 8.0.1
+
+Fixed marketplace version of the plugin not handling renamed redirects properly.
+
 # 8.0
 
 ## Important breaking change

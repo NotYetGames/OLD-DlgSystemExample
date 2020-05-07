@@ -1,4 +1,4 @@
-// Copyright 2017-2018 Csaba Molnar, Daniel Butum
+// Copyright Csaba Molnar, Daniel Butum. All Rights Reserved.
 #include "DialogueEvent_Details.h"
 
 #include "IDetailPropertyRow.h"
@@ -6,7 +6,7 @@
 #include "IDetailChildrenBuilder.h"
 
 #include "Nodes/DlgNode.h"
-#include "DlgReflectionHelper.h"
+#include "NYReflectionHelper.h"
 #include "DialogueDetailsPanelUtils.h"
 #include "DialogueEditor/Nodes/DialogueGraphNode.h"
 #include "Widgets/SDialogueTextPropertyPickList.h"
@@ -16,7 +16,7 @@
 #define LOCTEXT_NAMESPACE "DialogueEvent_Details"
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// FDialogueEventCustomization
+// FDialogueCustomEventization
 void FDialogueEvent_Details::CustomizeHeader(TSharedRef<IPropertyHandle> InStructPropertyHandle,
 	FDetailWidgetRow& HeaderRow, IPropertyTypeCustomizationUtils& StructCustomizationUtils)
 {
@@ -83,8 +83,9 @@ void FDialogueEvent_Details::CustomizeChildren(TSharedRef<IPropertyHandle> InStr
 				.HasContextCheckbox(bHasDialogue)
 				.IsContextCheckBoxChecked(false)
 				.CurrentContextAvailableSuggestions(this, &Self::GetCurrentDialogueEventNames)
-		);
-		EventNamePropertyRow->Update();
+		)
+		.SetVisibility(CREATE_VISIBILITY_CALLBACK(&Self::GetEventNameVisibility))
+		.Update();
 	}
 
 	// IntValue
@@ -120,6 +121,13 @@ void FDialogueEvent_Details::CustomizeChildren(TSharedRef<IPropertyHandle> InStr
 		BoolValuePropertyRow = &StructBuilder.AddProperty(
 			StructPropertyHandle->GetChildHandle(GET_MEMBER_NAME_CHECKED(FDlgEvent, bValue)).ToSharedRef());
 		BoolValuePropertyRow->Visibility(CREATE_VISIBILITY_CALLBACK(&Self::GetBoolValueVisibility));
+	}
+
+	// CustomEvent
+	{
+		CustomEventPropertyRow = &StructBuilder.AddProperty(
+			StructPropertyHandle->GetChildHandle(GET_MEMBER_NAME_CHECKED(FDlgEvent, CustomEvent)).ToSharedRef());
+		CustomEventPropertyRow->Visibility(CREATE_VISIBILITY_CALLBACK(&Self::GetCustomEventVisibility));
 	}
 
 	// Cache the initial event type
@@ -182,7 +190,12 @@ TArray<FName> FDialogueEvent_Details::GetAllDialoguesEventNames() const
 	case EDlgEventType::ModifyClassIntVariable:
 		if (Dialogue)
 		{
-			UDlgReflectionHelper::GetVariableNames(Dialogue->GetParticipantClass(ParticipantName), UIntProperty::StaticClass(), Suggestions);
+			FNYReflectionHelper::GetVariableNames(
+				Dialogue->GetParticipantClass(ParticipantName),
+				FNYIntProperty::StaticClass(),
+				Suggestions,
+				GetDefault<UDlgSystemSettings>()->BlacklistedReflectionClasses
+			);
 			FDlgHelper::SortDefault(Suggestions);
 		}
 		break;
@@ -190,7 +203,12 @@ TArray<FName> FDialogueEvent_Details::GetAllDialoguesEventNames() const
 	case EDlgEventType::ModifyClassFloatVariable:
 		if (Dialogue)
 		{
-			UDlgReflectionHelper::GetVariableNames(Dialogue->GetParticipantClass(ParticipantName), UFloatProperty::StaticClass(), Suggestions);
+			FNYReflectionHelper::GetVariableNames(
+				Dialogue->GetParticipantClass(ParticipantName),
+				FNYFloatProperty::StaticClass(),
+				Suggestions,
+				GetDefault<UDlgSystemSettings>()->BlacklistedReflectionClasses
+			);
 			FDlgHelper::SortDefault(Suggestions);
 		}
 		break;
@@ -198,7 +216,12 @@ TArray<FName> FDialogueEvent_Details::GetAllDialoguesEventNames() const
 	case EDlgEventType::ModifyClassBoolVariable:
 		if (Dialogue)
 		{
-			UDlgReflectionHelper::GetVariableNames(Dialogue->GetParticipantClass(ParticipantName), UBoolProperty::StaticClass(), Suggestions);
+			FNYReflectionHelper::GetVariableNames(
+				Dialogue->GetParticipantClass(ParticipantName),
+				FNYBoolProperty::StaticClass(),
+				Suggestions,
+				GetDefault<UDlgSystemSettings>()->BlacklistedReflectionClasses
+			);
 			FDlgHelper::SortDefault(Suggestions);
 		}
 		break;
@@ -206,7 +229,12 @@ TArray<FName> FDialogueEvent_Details::GetAllDialoguesEventNames() const
 	case EDlgEventType::ModifyClassNameVariable:
 		if (Dialogue)
 		{
-			UDlgReflectionHelper::GetVariableNames(Dialogue->GetParticipantClass(ParticipantName), UNameProperty::StaticClass(), Suggestions);
+			FNYReflectionHelper::GetVariableNames(
+				Dialogue->GetParticipantClass(ParticipantName),
+				FNYNameProperty::StaticClass(),
+				Suggestions,
+				GetDefault<UDlgSystemSettings>()->BlacklistedReflectionClasses
+			);
 			FDlgHelper::SortDefault(Suggestions);
 		}
 		break;
@@ -250,19 +278,39 @@ TArray<FName> FDialogueEvent_Details::GetCurrentDialogueEventNames() const
 		break;
 
 	case EDlgEventType::ModifyClassIntVariable:
-		UDlgReflectionHelper::GetVariableNames(Dialogue->GetParticipantClass(ParticipantName), UIntProperty::StaticClass(), Suggestions);
+		FNYReflectionHelper::GetVariableNames(
+			Dialogue->GetParticipantClass(ParticipantName),
+			FNYIntProperty::StaticClass(),
+			Suggestions,
+			GetDefault<UDlgSystemSettings>()->BlacklistedReflectionClasses
+		);
 		break;
 
 	case EDlgEventType::ModifyClassFloatVariable:
-		UDlgReflectionHelper::GetVariableNames(Dialogue->GetParticipantClass(ParticipantName), UFloatProperty::StaticClass(), Suggestions);
+		FNYReflectionHelper::GetVariableNames(
+			Dialogue->GetParticipantClass(ParticipantName),
+			FNYFloatProperty::StaticClass(),
+			Suggestions,
+			GetDefault<UDlgSystemSettings>()->BlacklistedReflectionClasses
+		);
 		break;
 
 	case EDlgEventType::ModifyClassBoolVariable:
-		UDlgReflectionHelper::GetVariableNames(Dialogue->GetParticipantClass(ParticipantName), UBoolProperty::StaticClass(), Suggestions);
+		FNYReflectionHelper::GetVariableNames(
+			Dialogue->GetParticipantClass(ParticipantName),
+			FNYBoolProperty::StaticClass(),
+			Suggestions,
+			GetDefault<UDlgSystemSettings>()->BlacklistedReflectionClasses
+		);
 		break;
 
 	case EDlgEventType::ModifyClassNameVariable:
-		UDlgReflectionHelper::GetVariableNames(Dialogue->GetParticipantClass(ParticipantName), UNameProperty::StaticClass(), Suggestions);
+		FNYReflectionHelper::GetVariableNames(
+			Dialogue->GetParticipantClass(ParticipantName),
+			FNYNameProperty::StaticClass(),
+			Suggestions,
+			GetDefault<UDlgSystemSettings>()->BlacklistedReflectionClasses
+		);
 		break;
 
 	case EDlgEventType::Event:
