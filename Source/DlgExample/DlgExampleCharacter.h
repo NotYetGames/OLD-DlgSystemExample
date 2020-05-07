@@ -14,6 +14,8 @@ class UCameraComponent;
 class USpringArmComponent;
 class UDecalComponent;
 
+class UDlgContext;
+
 UCLASS(Blueprintable)
 class ADlgExampleCharacter : public ACharacter, public IDlgDialogueParticipant
 {
@@ -39,18 +41,18 @@ public:
 	FText GetParticipantDisplayName_Implementation(FName ActiveSpeaker) const override { return DlgParticipantDisplayName; }
 	UTexture2D* GetParticipantIcon_Implementation(FName ActiveSpeaker, FName ActiveSpeakerState) const override { return DlgParticipantIcon; }
 
-	bool ModifyIntValue_Implementation(const FName& ValueName, bool bDelta, int32 Value) override;
-	bool ModifyFloatValue_Implementation(const FName& ValueName, bool bDelta, float Value) override;
-	bool ModifyBoolValue_Implementation(const FName& ValueName, bool bValue) override;
-	bool ModifyNameValue_Implementation(const FName& ValueName, const FName& NameValue) override;
+	bool ModifyIntValue_Implementation(FName ValueName, bool bDelta, int32 Value) override;
+	bool ModifyFloatValue_Implementation(FName ValueName, bool bDelta, float Value) override;
+	bool ModifyBoolValue_Implementation(FName ValueName, bool bValue) override;
+	bool ModifyNameValue_Implementation(FName ValueName, FName NameValue) override;
 
-	float GetFloatValue_Implementation(const FName& ValueName) const override;
-	int32 GetIntValue_Implementation(const FName& ValueName) const override;
-	bool GetBoolValue_Implementation(const FName& ValueName) const override;
-	FName GetNameValue_Implementation(const FName& ValueName) const override;
+	float GetFloatValue_Implementation(FName ValueName) const override;
+	int32 GetIntValue_Implementation(FName ValueName) const override;
+	bool GetBoolValue_Implementation(FName ValueName) const override;
+	FName GetNameValue_Implementation(FName ValueName) const override;
 
-	bool OnDialogueEvent_Implementation(const FName& EventName) override { return false; }
-	bool CheckCondition_Implementation(const FName& ConditionName) const override { return false; }
+	bool OnDialogueEvent_Implementation(UDlgContext* Context, FName EventName) override { return false; }
+	bool CheckCondition_Implementation(const UDlgContext* Context, FName ConditionName) const override { return false; }
 
 private:
 	/** Top down camera */
