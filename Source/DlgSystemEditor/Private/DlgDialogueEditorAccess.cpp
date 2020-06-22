@@ -103,7 +103,7 @@ void FDlgDialogueEditorAccess::UpdateDialogueToVersion_UseOnlyOneOutputAndInputP
 			// Make a proxy (selectable) edge graph node
 			UDialogueGraphNode_Edge* GraphNode_Edge =
 				FDialogueEditorUtilities::SpawnGraphNodeFromTemplate<UDialogueGraphNode_Edge>(
-					DialogueGraph, FVector2D(0.0f, 0.0f), false
+					DialogueGraph, GraphNode->GetDefaultEdgePosition(), false
 				);
 			GraphNode_Edge->CreateConnections(GraphNode, ConnectedNode);
 		}
@@ -123,4 +123,21 @@ void FDlgDialogueEditorAccess::UpdateDialogueToVersion_UseOnlyOneOutputAndInputP
 	OldPinsMap.Empty();
 	Dialogue->EnableCompileDialogue();
 	Dialogue->MarkPackageDirty();
+}
+
+
+void FDlgDialogueEditorAccess::SetNewOuterForObjectFromGraphNode(UObject* Object, UEdGraphNode* GraphNode) const
+{
+	if (!Object || !GraphNode)
+	{
+		return;
+	}
+
+	UDlgNode* ClosestNode = FDialogueEditorUtilities::GetClosestNodeFromGraphNode(GraphNode);
+	if (!ClosestNode)
+	{
+		return;
+	}
+
+	Object->Rename(nullptr, ClosestNode,  REN_DontCreateRedirectors);
 }
