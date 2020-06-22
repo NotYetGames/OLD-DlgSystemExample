@@ -4,27 +4,17 @@
 #include "UObject/TextProperty.h"
 
 #include "DlgSystemPrivatePCH.h"
-#include "DlgContextInternal.h"
+#include "DlgContext.h"
 #include "DlgDialogueParticipant.h"
 #include "NYReflectionHelper.h"
 #include "Logging/DlgLogger.h"
 
-
-FArchive& operator<<(FArchive &Ar, FDlgTextArgument& DlgCondition)
-{
-	Ar << DlgCondition.DisplayString;
-	Ar << DlgCondition.Type;
-	Ar << DlgCondition.ParticipantName;
-	Ar << DlgCondition.VariableName;
-	return Ar;
-}
-
-FFormatArgumentValue FDlgTextArgument::ConstructFormatArgumentValue(const UDlgContext* Context, FName NodeOwner) const
+FFormatArgumentValue FDlgTextArgument::ConstructFormatArgumentValue(const UDlgContext& Context, FName NodeOwner) const
 {
 	// If participant name is not valid we use the node owner name
 	const FName ValidParticipantName = ParticipantName == NAME_None ? NodeOwner : ParticipantName;
 
-	const UObject* Participant = Context->GetConstParticipant(ValidParticipantName);
+	const UObject* Participant = Context.GetParticipant(ValidParticipantName);
 	if (Participant == nullptr)
 	{
 		FDlgLogger::Get().Errorf(
