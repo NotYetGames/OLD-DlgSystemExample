@@ -14,7 +14,7 @@
 #include "DlgSystemEditorPrivatePCH.h"
 #include "DlgDialogue.h"
 #include "DialogueGraphNode_Edge.h"
-#include "DialogueEditor/DialogueEditorCommands.h"
+#include "DialogueCommands.h"
 #include "DlgSystemSettings.h"
 
 #define LOCTEXT_NAMESPACE "DialogueGraphNode"
@@ -206,7 +206,7 @@ void UDialogueGraphNode::GetNodeContextMenuActions(UToolMenu* Menu, UGraphNodeCo
 		// Menu for right clicking on node
 		FToolMenuSection& Section = Menu->AddSection("DialogueGraphNode_BaseNodeEditCRUD");
 		if (IsSpeechSequenceNode())
-			Section.AddMenuEntry(FDialogueEditorCommands::Get().ConvertSpeechSequenceNodeToSpeechNodes);
+			Section.AddMenuEntry(FDialogueCommands::Get().ConvertSpeechSequenceNodeToSpeechNodes);
 
 		Section.AddMenuEntry(FGenericCommands::Get().Delete);
 //		Section.AddMenuEntry(FGenericCommands::Get().Cut);
@@ -227,7 +227,7 @@ void UDialogueGraphNode::GetContextMenuActions(const FGraphNodeContextMenuBuilde
 		Context.MenuBuilder->BeginSection("DialogueGraphNode_BaseNodeEditCRUD");
 		{
 			if (IsSpeechSequenceNode())
-				Context.MenuBuilder->AddMenuEntry(FDialogueEditorCommands::Get().ConvertSpeechSequenceNodeToSpeechNodes);
+				Context.MenuBuilder->AddMenuEntry(FDialogueCommands::Get().ConvertSpeechSequenceNodeToSpeechNodes);
 
 			Context.MenuBuilder->AddMenuEntry(FGenericCommands::Get().Delete);
 //			Context.MenuBuilder->AddMenuEntry(FGenericCommands::Get().Cut);
@@ -530,19 +530,26 @@ void UDialogueGraphNode::CheckDialogueNodeSyncWithGraphNode(bool bStrictCheck) c
 	const int32 EdgesNum = NodeEdges.Num();
 	const int32 PinsLinkedToNum = OutputPin->LinkedTo.Num();
 	check(PinsLinkedToNum == GetChildNodes().Num());
-	checkf(EdgesNum == PinsLinkedToNum,
+	checkf(
+		EdgesNum == PinsLinkedToNum,
 		TEXT("The node with OLD index = %d does not have the number of PinsLinkedToNum (%d) equal to the EdgesNum (%d) in it's FDlgNode (DialogueNode)"),
-		NodeIndex, PinsLinkedToNum, EdgesNum);
+		NodeIndex, PinsLinkedToNum, EdgesNum
+	);
 
 	const int32 OpenEdgesNum = DialogueNode->GetNodeOpenChildren_DEPRECATED().Num();
-	checkf(OpenEdgesNum == 0,
+	checkf(
+		OpenEdgesNum == 0,
 		TEXT("The node with OLD index = %d has open output pins (%d), this should not be allowed"),
-		NodeIndex, OpenEdgesNum);
+		NodeIndex, OpenEdgesNum
+	);
 
-	checkf(DialogueNode->GetGraphNode() == this,
-		TEXT("The node with OLD index = %d does not have the DialogueNode.GraphNode == this (graph node)"));
+	checkf(
+		DialogueNode->GetGraphNode() == this,
+		TEXT("The node with OLD index = %d does not have the DialogueNode.GraphNode == this (graph node)"),
+		NodeIndex
+	);
 
-	// Check if Edges have the same openess as the output pins
+	// Check if Edges have the same openness as the output pins
 	if (bStrictCheck)
 	{
 		for (int32 EdgeIndex = 0; EdgeIndex < EdgesNum; EdgeIndex++)
@@ -560,7 +567,7 @@ void UDialogueGraphNode::CheckDialogueNodeSyncWithGraphNode(bool bStrictCheck) c
 #endif
 }
 
-const TArray<UDialogueGraphNode*> UDialogueGraphNode::GetParentNodes() const
+TArray<UDialogueGraphNode*> UDialogueGraphNode::GetParentNodes() const
 {
 	// (input pin) ParentNode (output pin) -> (input pin) EdgeNode aka ParentEdgeConnection (output pin) -> (input pin) ThisNode (output pin)
 	TArray<UDialogueGraphNode*> ParentNodes;
@@ -572,7 +579,7 @@ const TArray<UDialogueGraphNode*> UDialogueGraphNode::GetParentNodes() const
 	return ParentNodes;
 }
 
-const TArray<UDialogueGraphNode*> UDialogueGraphNode::GetChildNodes() const
+TArray<UDialogueGraphNode*> UDialogueGraphNode::GetChildNodes() const
 {
 	// (input pin) ThisNode (output pin) -> (input pin) EdgeNode aka ChildEdgeConnection (output pin) -> (input pin) ChildNode (output pin)
 	TArray<UDialogueGraphNode*> ChildNodes;
@@ -584,7 +591,7 @@ const TArray<UDialogueGraphNode*> UDialogueGraphNode::GetChildNodes() const
 	return ChildNodes;
 }
 
-const TArray<UDialogueGraphNode_Edge*> UDialogueGraphNode::GetParentEdgeNodes(bool bCheckChild /*= true*/) const
+TArray<UDialogueGraphNode_Edge*> UDialogueGraphNode::GetParentEdgeNodes(bool bCheckChild /*= true*/) const
 {
 	// (input pin) ParentNode (output pin) -> (input pin) EdgeNode aka ParentEdgeConnection (EdgeOutputPin) -> (input pin) ThisNode (output pin)
 	TArray<UDialogueGraphNode_Edge*> ParentEdgeNodes;
@@ -605,7 +612,7 @@ const TArray<UDialogueGraphNode_Edge*> UDialogueGraphNode::GetParentEdgeNodes(bo
 	return ParentEdgeNodes;
 }
 
-const TArray<UDialogueGraphNode_Edge*> UDialogueGraphNode::GetChildEdgeNodes(bool bCheckParent /*= true*/) const
+TArray<UDialogueGraphNode_Edge*> UDialogueGraphNode::GetChildEdgeNodes(bool bCheckParent /*= true*/) const
 {
 	// (input pin) ThisNode (output pin) -> (EdgeInputPin) EdgeNode aka ChildEdgeConnection (output pin) -> (input pin) ChildNode (output pin)
 	TArray<UDialogueGraphNode_Edge*> ChildEdgeNodes;

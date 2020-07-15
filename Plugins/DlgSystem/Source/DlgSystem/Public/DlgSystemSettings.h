@@ -21,7 +21,7 @@ enum class EDlgDialogueTextFormat : uint8
 
 	// DEPRECATED. The own Dialogue Text format. DEPRECATED.
 	// NOTE: this format is deprecated AND in the next version it will be removed
-	DialogueDEPRECATED	UMETA(DisplayName = "[DEPRECATED] DlgText"),
+	DialogueDEPRECATED	UMETA(Hidden),
 
 	// Hidden represents the start of the text formats index
 	StartTextFormats = DialogueDEPRECATED 	UMETA(Hidden),
@@ -210,7 +210,7 @@ public:
 
 
 	// Shows the NodeData that you can customize yourself
-	UPROPERTY(Category = "Dialogue Node Data", Config, EditAnywhere, DisplayName = "Node Data Visibility")
+	UPROPERTY(Category = "Dialogue Node Data", Config, EditAnywhere)
 	bool bShowNodeData = true;
 
 	// Where to display the SpeakerState FName property
@@ -222,9 +222,11 @@ public:
 	EDlgVoiceDisplayedFields DialogueDisplayedVoiceFields = EDlgVoiceDisplayedFields::None;
 
 	// Generic data is an UObject* which can be assigned to nodes and can be asked from the active one
-	UPROPERTY(Category = "Dialogue Node Data", Config, EditAnywhere, DisplayName = "Generic Data Visibility")
+	UPROPERTY(Category = "Dialogue Node Data", Config, EditAnywhere)
 	bool bShowGenericData = false;
 
+	UPROPERTY(Category = "Dialogue Node Data", Config, EditAnywhere, AdvancedDisplay)
+	bool bShowAdvancedChildren = true;
 
 	// Any properties that belong to these classes won't be shown in the suggestion list when you use the reflection system (class variables).
 	UPROPERTY(Category = "Dialogue", Config, EditAnywhere)
@@ -323,6 +325,24 @@ public:
 	UPROPERTY(Category = "Browser", Config, EditAnywhere)
 	bool bHideEmptyDialogueBrowserCategories = true;
 
+
+	//
+	// External URLs
+	//
+
+	// Should the external URLs toolbar be displayed
+	UPROPERTY(Category = "External URLs", Config, EditAnywhere)
+	bool bShowExternalURLsToolbar = true;
+
+	FString URLNotYetPlugins = "https://bit.ly/NotYetPluginsEditor";
+	FString URLMarketplace = "https://bit.ly/DlgMarketplaceEditor";
+	FString URLWiki = "https://bit.ly/DlgWikiEditor";
+	FString URLForum = "https://bit.ly/DlgForumEditor";
+	FString URLDiscord = "https://bit.ly/NYDiscordEditor";
+
+	//
+	// Graph NOde
+	//
 
 	// Whether the description text wraps onto a new line when it's length exceeds this width;
 	// Tf this value is zero or negative, no wrapping occurs.
@@ -449,7 +469,6 @@ public:
 	// The Color of the wire when the edge is secondary.
 	UPROPERTY(Category = "Graph Edge Color", Config, EditAnywhere)
 	FLinearColor WireSecondaryEdgeColor = FLinearColor{0.101961f, 0.137255f, 0.494118f, 1.f}; // blueish
-
 
 	//
 	// Advanced Section
