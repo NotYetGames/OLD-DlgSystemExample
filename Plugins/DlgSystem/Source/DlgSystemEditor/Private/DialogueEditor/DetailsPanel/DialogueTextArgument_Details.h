@@ -9,6 +9,7 @@
 #include "DlgManager.h"
 
 class FDialogueTextPropertyPickList_CustomRowHelper;
+class IDetailPropertyRow;
 
 /**
  * How the details panel renders the FDlgTextArgument
@@ -52,8 +53,14 @@ private:
 	// Getters for the visibility of some properties
 	EVisibility GetVariableNameVisibility() const
 	{
-		return (ArgumentType != EDlgTextArgumentType::DisplayName && ArgumentType != EDlgTextArgumentType::Gender)
+		return ArgumentType != EDlgTextArgumentType::DisplayName &&
+			   ArgumentType != EDlgTextArgumentType::Gender &&
+			   ArgumentType != EDlgTextArgumentType::Custom
 			   ? EVisibility::Visible : EVisibility::Hidden;
+	}
+	EVisibility GetCustomTextArgumentVisibility() const
+	{
+		return ArgumentType == EDlgTextArgumentType::Custom ? EVisibility::Visible : EVisibility::Hidden;
 	}
 
 	/** Gets all the event name suggestions depending on EventType from all Dialogues. */
@@ -111,6 +118,8 @@ private:
 	// Cache the rows of the properties, created in CustomizeChildren
 	TSharedPtr<FDialogueTextPropertyPickList_CustomRowHelper> ParticipantNamePropertyRow;
 	TSharedPtr<FDialogueTextPropertyPickList_CustomRowHelper> VariableNamePropertyRow;
+	class IDetailPropertyRow* CustomTextArgumentPropertyRow = nullptr;
+
 
 	/** Hold a reference to dialogue we are displaying. */
 	UDlgDialogue* Dialogue = nullptr;
