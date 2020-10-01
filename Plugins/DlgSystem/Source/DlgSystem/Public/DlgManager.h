@@ -13,6 +13,16 @@ class UDlgContext;
 class UDlgDialogue;
 
 
+USTRUCT(BlueprintType)
+struct DLGSYSTEM_API FDlgObjectsArray
+{
+	GENERATED_USTRUCT_BODY()
+
+public:
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Data")
+	TArray<UObject*> Array;
+};
+
 /**
  *  Class providing a collection of static functions to start a conversation and work with Dialogues.
  */
@@ -124,15 +134,23 @@ public:
 	// Helper methods, same as StartDialogue but with fixed amount of participant(s)
 	//
 
+	// Helper methods that allows you to start a Dialogue with only a participant
+	// For N Participants just use StartDialogue
 	UFUNCTION(BlueprintCallable, Category = "Dialogue|Launch")
 	static UDlgContext* StartMonologue(UDlgDialogue* Dialogue, UObject* Participant);
 
+	// Helper methods that allows you to start a Dialogue with 2 participants
+	// For N Participants just use StartDialogue
 	UFUNCTION(BlueprintCallable, Category = "Dialogue|Launch")
 	static UDlgContext* StartDialogue2(UDlgDialogue* Dialogue, UObject* Participant0, UObject* Participant1);
 
+	// Helper methods that allows you to start a Dialogue with 3 participants
+	// For N Participants just use StartDialogue
 	UFUNCTION(BlueprintCallable, Category = "Dialogue|Launch")
 	static UDlgContext* StartDialogue3(UDlgDialogue* Dialogue, UObject* Participant0, UObject* Participant1, UObject* Participant2);
 
+	// Helper methods that allows you to start a Dialogue with 4 participants
+	// For N Participants just use StartDialogue
 	UFUNCTION(BlueprintCallable, Category = "Dialogue|Launch")
 	static UDlgContext* StartDialogue4(UDlgDialogue* Dialogue, UObject* Participant0, UObject* Participant1, UObject* Participant2, UObject* Participant3);
 
@@ -146,11 +164,17 @@ public:
 	static TArray<UDlgDialogue*> GetAllDialoguesFromMemory();
 
 	// Gets all the objects from the provided World that implement the Dialogue Participant Interface. Iterates through all objects, DO NOT CALL EACH FRAME
-	static TArray<TWeakObjectPtr<AActor>> GetAllActorsImplementingDialogueParticipantInterface(UWorld* World);
+	static TArray<TWeakObjectPtr<AActor>> GetAllWeakActorsWithDialogueParticipantInterface(UWorld* World);
 
 	// Gets all objects from the World that implement the Dialogue Participant Interface
 	UFUNCTION(BlueprintPure, Category = "Dialogue|Helper", meta = (WorldContext = "WorldContextObject"))
 	static TArray<UObject*> GetAllObjectsWithDialogueParticipantInterface(UObject* WorldContextObject);
+
+	// Same as GetAllObjectsWithDialogueParticipantInterface but groups the Objects into a Map
+	// Where the Key is the Participant Name
+	// and the Value is the Participants Array
+	UFUNCTION(BlueprintPure, Category = "Dialogue|Helper", meta = (WorldContext = "WorldContextObject"))
+	static TMap<FName, FDlgObjectsArray> GetAllObjectsMapWithDialogueParticipantInterface(UObject* WorldContextObject);
 
 	// Gets all the dialogues that have a duplicate GUID, should not happen, like ever.
 	static TArray<UDlgDialogue*> GetDialoguesWithDuplicateGUIDs();
@@ -176,16 +200,6 @@ public:
 	// Does the Object implement the Dialogue Participant Interface?
 	UFUNCTION(BlueprintPure, Category = "Dialogue|Helper")
 	static bool DoesObjectImplementDialogueParticipantInterface(const UObject* Object);
-	static bool DoesClassImplementParticipantInterface(const UClass* Class)
-	{
-		static const UClass* DialogueParticipantClass = UDlgDialogueParticipant::StaticClass();
-		if (!Class)
-		{
-			return false;
-		}
-
-		return Class->ImplementsInterface(DialogueParticipantClass);
-	}
 
 	// Is Object a UDlgEventCustom or a child from that
 	UFUNCTION(BlueprintPure, Category = "Dialogue|Helper", DisplayName = "Is Object A Custom Event")
@@ -250,15 +264,15 @@ public:
 	// This tries to get the source world for the dialogues
 	// In the following order (the first one that is valid, returns that):
 	// 1. The user set one UserWorldContextObjectPtr (if it is set):
-	//    - Set - SetDialoguePersistentWorldContextObject
-	//    - Clear - ClearDialoguePersistentWorldContextObject
+	//    - Set  with SetDialoguePersistentWorldContextObject
+	//    - Clear with ClearDialoguePersistentWorldContextObject
 	// 2. The first PIE world
 	// 3. The first Game World
 	UFUNCTION(BlueprintCallable, Category = "Dialogue|Persistence")
 	static UWorld* GetDialogueWorld();
 
 	// If the user wants to set the world context object manually
-	// Otherwise just use GetDialogueWorld()
+	// Otherwise just use GetDialogueWorld
 	UFUNCTION(BlueprintCallable, Category = "Dialogue|Persistence")
 	static void SetDialoguePersistentWorldContextObject(const UObject* WorldContextObject)
 	{
