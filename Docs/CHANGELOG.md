@@ -1,4 +1,62 @@
+
+# v12.1
+**Date:** October 13, 2020
+
+- **Moved** loading all dialogues logic into search manager init, but only after the content browser loads all the assets. This basically moves the loading to the editor so that it seems the plugin is not at fault for the long loading times.
+- **Fixed** `CanStartDialogue` so that it matches the enter logic of `StartDialogue`
+
+# V12
+**Date:** September 30, 2020
+
+- **Fix** crash when opening the Help Menu for UE 4.24 and 4.25
+
+### Blueprint
+
+- When **creating a new Blueprint** of type **Custom Events/Conditions/Text Argument** the overridden function/event is automatically created for you and the blueprint opens there.
+- When **creating a new Blueprint** of type **Node Data** add a comment to the graph saying you need to add variables to see them in the Dialogue Editor, when using the Node Data
+
+### Dialogue Editor
+- **Add option** so that the **participant classes are auto set** to default to the first participant class that matches the participant Name
+  - This only works if there is only one participant class of that Participant Name and Blueprint Classes take priority over Native Classes
+- **Add details panel buttons** for "Browse to Asset on Content Browser" and "Open Asset" for the **Custom Events/Conditions/Text Argument or Node Data**
+- **Nodes created** from another node will default to having the Participant Name the same as the Parent
+- **Add** “Browse Participant in Content Browser” and “Open Participant Blueprint" for events and conditions when the participant is involved so that you can easier go the Participant.
+  - This only works if the participant class is set in the particular Dialogue.
+
+### Dialogue Content Browser
+- **Add** support for Custom Events
+
+### Find in Dialogue
+- **Add the following search filters**:
+  - Node GUIDs
+  - Custom Object Names path (NOT the contents of the fields)
+- **Add** the context Index for Events and Conditions so you know which array index it is from
+
+### Content Browser
+- **Allow to create** **Custom Events/Conditions/Text Argument or Node Data** from the Dialogue Menu (the same where you create the Dialogue Asset)
+- **Move**  Dialogues filters to the content browser backend this way you can combine them with other filter
+  - Only the Dialogue Participants Filter remains in the frontend because there is not sane way to implement it in the backend
+
+- **Add** class and thumbnail icons for all custom classes (event, condition, text argument and node data)
+
+### Dialogue
+- Dialogue Participants Data now gathers data about all custom events/conditions/text arguments
+- Increased Dialogue Version number to `AddCustomObjectsToParticipantsData`
+
+
+# v11.1
+**Date:** September 7, 2020
+
+- **Important Bug Fixed** - Fix crash on compile (opened the dialogue asset or packaged the project) for some dialogues that have edges with the `WasNodeVisited` or `HasSatisfiedChild` Condition.
+
+- **Set** namespace and key for default edge texts for "Finish" and "Next"
+- **Add** the follow new methods to the **Dialogue Context**:
+  - `IsValidOptionIndex`
+  - `IsValidAllOptionIndex`
+  - `GetActiveNodeParticipantDisplayName`
+
 # v11
+**Date:** August 29, 2020
 
 ## Important Changes
 
@@ -14,7 +72,7 @@ Add the following new methods to the Dialogue:
 - `GetNode`
 - `GetNodeFromGUID`
 
-Add the follow  new methods to the Dialogue Context:
+Add the follow new methods to the Dialogue Context:
 - `GetActiveNodeGUID`
 - `IsValidNodeGUID`
 - `GetGUIDForNodeIndex`
@@ -65,6 +123,7 @@ Add the follow  new methods to the Dialogue Context:
 - **Renamed** Dialogue Browser Class Integers/Floats/etc to be just Integers/Floats/etc without the class prefix.
 
 # v10
+**Date:** July 15, 2020
 
 - **Network replicate** the Dialogue Context (specifically the Dialogue and Participants)
 - **Remove** `DlgText` format (the files with the `.dlg` file extension) from being selectable in the UI Dialogue Settings.
@@ -99,6 +158,7 @@ as an export method in the next version
 
 
 # v9.1
+**Date:** June 23, 2020
 
 ## Important Bug Fixes
 
@@ -132,6 +192,7 @@ as an export method in the next version
 	- `GetParticipantMap` -> `GetParticipantsMap`
 
 # v9
+**Date:** May 3, 2020
 
 ## Important breaking change
 
@@ -166,6 +227,7 @@ as an export method in the next version
 - **Fix** Blueprint Nativization for 4.24
 
 # v8.0.2
+**Date:** February 1, 2020
 
 - **Fix** Linux Editor Compile
 
@@ -192,6 +254,7 @@ as an export method in the next version
 Fixed marketplace version of the plugin not handling renamed redirects properly.
 
 # v8
+**Date:** December 15, 2019
 
 ## Important breaking change
 
