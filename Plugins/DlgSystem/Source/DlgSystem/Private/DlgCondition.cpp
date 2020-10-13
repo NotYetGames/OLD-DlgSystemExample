@@ -1,7 +1,7 @@
 // Copyright Csaba Molnar, Daniel Butum. All Rights Reserved.
 #include "DlgCondition.h"
 
-#include "DlgSystemPrivatePCH.h"
+#include "DlgConstants.h"
 #include "DlgMemory.h"
 #include "DlgContext.h"
 #include "Nodes/DlgNode.h"
@@ -290,9 +290,8 @@ bool FDlgCondition::IsParticipantInvolved() const
 
 bool FDlgCondition::IsSecondParticipantInvolved() const
 {
-	return CompareType != EDlgCompare::ToConst
-		&& ConditionType != EDlgConditionType::WasNodeVisited
-		&& ConditionType != EDlgConditionType::HasSatisfiedChild;
+	// Second participant requires first participant
+	return CompareType != EDlgCompare::ToConst && IsParticipantInvolved();
 }
 
 FString FDlgCondition::ConditionTypeToString(EDlgConditionType Type)
