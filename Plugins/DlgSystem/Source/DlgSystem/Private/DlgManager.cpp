@@ -9,7 +9,7 @@
 #include "Engine/Engine.h"
 
 #include "IDlgSystemModule.h"
-#include "DlgSystemPrivatePCH.h"
+#include "DlgConstants.h"
 #include "DlgDialogueParticipant.h"
 #include "DlgDialogue.h"
 #include "DlgMemory.h"
@@ -19,6 +19,8 @@
 #include "NYReflectionHelper.h"
 
 TWeakObjectPtr<const UObject> UDlgManager::UserWorldContextObjectPtr = nullptr;
+
+bool UDlgManager::bCalledLoadAllDialoguesIntoMemory = false;;
 
 UDlgContext* UDlgManager::StartDialogueWithDefaultParticipants(UObject* WorldContextObject, UDlgDialogue* Dialogue)
 {
@@ -217,11 +219,13 @@ UDlgContext* UDlgManager::StartDialogue4(UDlgDialogue* Dialogue, UObject* Partic
 	return StartDialogueWithContext(TEXT("StartDialogue4"), Dialogue, Participants);
 }
 
-int32 UDlgManager::LoadAllDialoguesIntoMemory()
+int32 UDlgManager::LoadAllDialoguesIntoMemory(bool bAsync)
 {
+	bCalledLoadAllDialoguesIntoMemory = true;
+
 	// NOTE: All paths must NOT have the forward slash "/" at the end.
 	// If they do, then this won't load Dialogues that are located in the Content root directory
-	UObjectLibrary* ObjectLibrary = UObjectLibrary::CreateLibrary(UDlgDialogue::StaticClass(), true, GIsEditor);
+	UObjectLibrary* ObjectLibrary = UObjectLibrary::CreateLibrary(UDlgDialogue::StaticClass(), false, GIsEditor);
 	TArray<FString> PathsToSearch = { TEXT("/Game") };
 	ObjectLibrary->AddToRoot();
 
@@ -236,14 +240,25 @@ int32 UDlgManager::LoadAllDialoguesIntoMemory()
 		PathsToSearch.Add(PluginPath);
 	}
 
-	ObjectLibrary->LoadAssetDataFromPaths(PathsToSearch);
-	const int32 Count = ObjectLibrary->LoadAssetsFromAssetData();
+	const bool bForceSynchronousScan = !bAsync;
+	const int32 Count = ObjectLibrary->LoadAssetDataFromPaths(PathsToSearch, bForceSynchronousScan);
+	ObjectLibrary->LoadAssetsFromAssetData();
 	ObjectLibrary->RemoveFromRoot();
+
 	return Count;
 }
 
 TArray<UDlgDialogue*> UDlgManager::GetAllDialoguesFromMemory()
 {
+#if WITH_EDITOR
+	// Hmm, something is wrong
+	if (!bCalledLoadAllDialoguesIntoMemory)
+	{
+		LoadAllDialoguesIntoMemory(false);
+	}
+// 	check(bCalledLoadAllDialoguesIntoMemory);
+#endif
+
 	TArray<UDlgDialogue*> Array;
 	for (TObjectIterator<UDlgDialogue> Itr; Itr; ++Itr)
 	{
@@ -256,13 +271,13 @@ TArray<UDlgDialogue*> UDlgManager::GetAllDialoguesFromMemory()
 	return Array;
 }
 
-TArray<TWeakObjectPtr<AActor>> UDlgManager::GetAllActorsImplementingDialogueParticipantInterface(UWorld* World)
+TArray<TWeakObjectPtr<AActor>> UDlgManager::GetAllWeakActorsWithDialogueParticipantInterface(UWorld* World)
 {
 	TArray<TWeakObjectPtr<AActor>> Array;
 	for (TActorIterator<AActor> Itr(World); Itr; ++Itr)
 	{
 		AActor* Actor = *Itr;
-		if (IsValid(Actor) && Actor->GetClass()->ImplementsInterface(UDlgDialogueParticipant::StaticClass()))
+		if (IsValid(Actor) && !Actor->IsPendingKill() && Actor->GetClass()->ImplementsInterface(UDlgDialogueParticipant::StaticClass()))
 		{
 			Array.Add(Actor);
 		}
@@ -273,30 +288,62 @@ TArray<TWeakObjectPtr<AActor>> UDlgManager::GetAllActorsImplementingDialoguePart
 TArray<UObject*> UDlgManager::GetAllObjectsWithDialogueParticipantInterface(UObject* WorldContextObject)
 {
 	TArray<UObject*> Array;
-	if (WorldContextObject != nullptr)
-	{
-		if (UWorld* World = WorldContextObject->GetWorld())
-		{
-			// TObjectIterator has some weird ghost objects in editor, I failed to find a way to validate them
-			// Instead of this ActorIterate is used and the properties inside the actors are examined in a recursive way
-			// Containers are not supported yet
-			TSet<UObject*> VisitedSet;
-			for (TActorIterator<AActor> Itr(World); Itr; ++Itr)
-			{
-				GatherParticipantsRecursive(*Itr, Array, VisitedSet);
-			}
+	if (!WorldContextObject)
+		return Array;
 
-			//for (TObjectIterator<UObject> Itr(World); Itr; ++Itr)
-			//{
-			//	UObject* Object = *Itr;
-			//	if (IsValid(Object) && Object->GetClass()->ImplementsInterface(UDlgDialogueParticipant::StaticClass()))
-			//	{
-			//		Array.AddUnique(Object);
-			//	}
-			//}
+	if (UWorld* World = GEngine->GetWorldFromContextObject(WorldContextObject, EGetWorldErrorMode::LogAndReturnNull))
+	{
+		// TObjectIterator has some weird ghost objects in editor, I failed to find a way to validate them
+		// Instead of this ActorIterate is used and the properties inside the actors are examined in a recursive way
+		// Containers are not supported yet
+		TSet<UObject*> VisitedSet;
+		for (TActorIterator<AActor> Itr(World); Itr; ++Itr)
+		{
+			GatherParticipantsRecursive(*Itr, Array, VisitedSet);
 		}
 	}
+
+	// TArray<UObject*> Array2;
+	// for (TObjectIterator<UObject> Itr; Itr; ++Itr)
+	// {
+	// 	UObject* Object = *Itr;
+	// 	if (IsValid(Object)
+	// 		&& !Object->IsPendingKill()
+	// 		&& Object->GetClass()->ImplementsInterface(UDlgDialogueParticipant::StaticClass()))
+	// 		//&& IDlgDialogueParticipant::Execute_GetParticipantName(Object) != NAME_None)
+	// 	{
+	// 		if (Object->HasAllFlags(RF_Transient | RF_Transactional) || !Object->HasAnyFlags(RF_Transient) )
+	// 		{
+	// 			Array2.AddUnique(Object);
+	// 		}
+	// 	}
+	// }
+
 	return Array;
+}
+
+TMap<FName, FDlgObjectsArray> UDlgManager::GetAllObjectsMapWithDialogueParticipantInterface(UObject* WorldContextObject)
+{
+	// Maps from Participant Name => Objects that have that participant name
+	TMap<FName, FDlgObjectsArray> ObjectsMap;
+	for (UObject* Participant : GetAllObjectsWithDialogueParticipantInterface(WorldContextObject))
+	{
+		const FName ParticipantName = IDlgDialogueParticipant::Execute_GetParticipantName(Participant);
+		if (ObjectsMap.Contains(ParticipantName))
+		{
+			// Update
+			ObjectsMap[ParticipantName].Array.Add(Participant);
+		}
+		else
+		{
+			// Create
+			FDlgObjectsArray ArrayStruct;
+			ArrayStruct.Array.Add(Participant);
+			ObjectsMap.Add(ParticipantName, ArrayStruct);
+		}
+	}
+
+	return ObjectsMap;
 }
 
 TArray<UDlgDialogue*> UDlgManager::GetDialoguesWithDuplicateGUIDs()
@@ -362,29 +409,7 @@ void UDlgManager::ClearDialogueHistory()
 
 bool UDlgManager::DoesObjectImplementDialogueParticipantInterface(const UObject* Object)
 {
-	if (!Object)
-	{
-		return false;
-	}
-
-	// Apparently blueprints only work this way
-	// NOTE this is the blueprint assets, not an instance, used only by the custom graph nodes
-	if (const UBlueprint* Blueprint = Cast<UBlueprint>(Object))
-	{
-		if (const UClass* GeneratedClass = Cast<UClass>(Blueprint->GeneratedClass))
-		{
-			return DoesClassImplementParticipantInterface(GeneratedClass);
-		}
-	}
-
-	// A class object, does this ever happen?
-	if (const UClass* Class = Cast<UClass>(Object))
-	{
-		return DoesClassImplementParticipantInterface(Class);
-	}
-
-	// All other object types
-	return DoesClassImplementParticipantInterface(Object->GetClass());
+	return FDlgHelper::IsObjectImplementingInterface(Object, UDlgDialogueParticipant::StaticClass());
 }
 
 bool UDlgManager::IsObjectACustomEvent(const UObject* Object)
@@ -535,7 +560,7 @@ bool UDlgManager::UnregisterDialogueConsoleCommands()
 
 void UDlgManager::GatherParticipantsRecursive(UObject* Object, TArray<UObject*>& Array, TSet<UObject*>& AlreadyVisited)
 {
-	if (!IsValid(Object) || AlreadyVisited.Contains(Object))
+	if (!IsValid(Object) || Object->IsPendingKill() || AlreadyVisited.Contains(Object))
 	{
 		return;
 	}
@@ -546,6 +571,7 @@ void UDlgManager::GatherParticipantsRecursive(UObject* Object, TArray<UObject*>&
 		Array.Add(Object);
 	}
 
+	// Gather recursive from children
 	for (auto* Property = Object->GetClass()->PropertyLink; Property != nullptr; Property = Property->PropertyLinkNext)
 	{
 		if (auto* ObjectProperty = FNYReflectionHelper::CastProperty<FNYObjectProperty>(Property))
