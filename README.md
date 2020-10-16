@@ -1,3 +1,5 @@
+# ⚠️OLD example project
+# 🚨 USE NEW example project instead 👉 https://gitlab.com/NotYetGames/NotYetDlgSystemExample 👈
 # DlgSystem (Dialogue System) Plugin Example Project
 
 Branch Unreal version: `4.24`
